@@ -1,27 +1,73 @@
-# Directorio bin/
+# Directorio bin/ - Ejecutables del Sistema
 
 ## Propósito
 
-Este directorio cumple con los requisitos de estructura académica especificados por la universidad. En el contexto de una aplicación web Flask, este directorio podría contener:
+Este directorio contiene los **ejecutables independientes** del Sistema de Gestión Textiles ALS, cumpliendo con los requisitos académicos de crear aplicaciones que funcionen sin librerías externas.
 
-## Contenido potencial:
+## Contenido del directorio:
 
-### Scripts de ejecución:
-- Scripts de inicio de la aplicación
-- Scripts de configuración del entorno
-- Scripts de despliegue
+### Ejecutables compilados:
+- `TextilesALS.exe` - **Ejecutable principal independiente** (se genera en `dist/`)
+- `textiles_als_standalone.py` - Código fuente del ejecutable
+- `build_executable.py` - Script de compilación automatizada
 
-### Ejecutables del proyecto:
-- Binarios compilados (si los hubiera)
-- Scripts de automatización
-- Herramientas de utilidad
+### Scripts de automatización:
+- `compilar_ejecutable.bat` - Script Windows para compilación automática
+- `textiles_als.spec` - Configuración de PyInstaller
 
-## Aplicación Flask actual:
+### Archivos de soporte:
+- `INSTRUCCIONES_EJECUTABLE.txt` - Manual de usuario del ejecutable
+- `README.md` - Este archivo de documentación
 
-Para esta aplicación web Flask, la ejecución se realiza mediante:
-- `run.py` (archivo principal en src/)
+## Características del ejecutable:
+
+✅ **Totalmente independiente** - No requiere Python ni librerías externas  
+✅ **Compilación estática** - Todas las DLLs y dependencias incluidas  
+✅ **Un solo archivo** - Ejecutable portable de ~40-60MB  
+✅ **Auto-contenido** - Servidor web Flask integrado  
+✅ **Base de datos local** - Archivos JSON incluidos  
+✅ **Interfaz web moderna** - Accesible vía navegador  
+
+## Uso del ejecutable:
+
+### Opción 1: Ejecutar directamente
+```
+1. Navegar a bin/dist/
+2. Doble clic en TextilesALS.exe
+3. ¡Listo! Se abre automáticamente en el navegador
+```
+
+### Opción 2: Desde línea de comandos
+```cmd
+cd bin\dist\
+TextilesALS.exe
+```
+
+### Acceso a la aplicación:
+- **URL:** http://localhost:5000
+- **Usuario:** admin  
+- **Contraseña:** admin123
+
+## Compilación del ejecutable:
+
+### Automática (recomendada):
+```cmd
+cd bin\
+compilar_ejecutable.bat
+```
+
+### Manual:
+```cmd
+cd bin\
+python build_executable.py
+```
+
+## Aplicación Flask original:
+
+Para desarrollo, la aplicación Flask se ejecuta mediante:
+- `src/run.py` - Archivo principal de desarrollo
 - Scripts de utilidad en `src/scripts/`
-- Comandos de Flask estándar
+- Comandos Flask estándar para desarrollo
 
 ## Nota académica:
 
