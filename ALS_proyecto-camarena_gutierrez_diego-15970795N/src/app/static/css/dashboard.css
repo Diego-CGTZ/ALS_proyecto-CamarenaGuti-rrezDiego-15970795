@@ -1,0 +1,207 @@
+/* Dashboard - Estilos específicos para el dashboard y estadísticas */
+
+:root {
+    --stats-bg-color: #ffffff;
+    --stats-text-color: #212529;
+    --spacing-md: 1rem;
+    --spacing-lg: 2rem;
+}
+
+/* Estadísticas del Dashboard */
+.stats-card {
+    background: var(--stats-bg-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: var(--transition-base);
+    color: var(--stats-text-color);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    box-shadow: var(--box-shadow);
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--box-shadow-lg);
+    background: #f8f9fa;
+}
+
+.stats-card h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.stats-card p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.stats-card .icon {
+    font-size: 3rem;
+    opacity: 0.8;
+    float: right;
+    margin-top: -10px;
+}
+
+/* Variaciones de colores para stats */
+.stats-card.stats-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.stats-card.stats-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.stats-card.stats-warning {
+    background: var(--warning-color);
+    color: var(--dark-color);
+}
+
+.stats-card.stats-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.stats-card.stats-info {
+    background: var(--info-color);
+    color: white;
+}
+
+/* Acciones rápidas */
+.quick-action {
+    text-align: center;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    transition: var(--transition-base);
+    text-decoration: none;
+    display: block;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    color: var(--dark-color);
+    box-shadow: var(--box-shadow);
+}
+
+.quick-action:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-lg);
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.quick-action i {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    transition: var(--transition-base);
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+.quick-action:hover i {
+    transform: scale(1.1);
+}
+
+.quick-action h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.quick-action p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+}
+
+/* Gráficos y métricas */
+.chart-container {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    box-shadow: var(--box-shadow);
+    margin-bottom: var(--spacing-lg);
+}
+
+.chart-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--dark-color);
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.metric-item:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.metric-value {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Widget de actividad reciente */
+.activity-widget {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.activity-header {
+    background-color: var(--light-color);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    font-weight: 600;
+}
+
+.activity-item {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-md);
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 500;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.activity-time {
+    color: var(--secondary-color);
+    font-size: 0.8rem;
+    margin: 0;
+}

@@ -1,0 +1,592 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Clientes - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="bi bi-people text-primary"></i> 
+                    Gestión de Clientes
+                </h1>
+                <a href="{{ url_for('clientes.nuevo') }}" class="btn btn-primary btn-modern">
+                    <i class="bi bi-plus"></i> Nuevo Cliente
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros y Búsqueda -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-search text-primary"></i> 
+                    Buscar Clientes
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="buscar" class="form-label">Buscar</label>
+                        <input type="text" class="form-control" id="buscar" name="buscar" 
+                               value="{{ request.args.get('buscar', '') }}" 
+                               placeholder="Nombre, apellido, email...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="tipo" class="form-label">Tipo de Cliente</label>
+                        <select class="form-select" id="tipo" name="tipo">
+                            <option value="">Todos</option>
+                            <option value="individual" {{ 'selected' if request.args.get('tipo') == 'individual' }}>Individual</option>
+                            <option value="empresa" {{ 'selected' if request.args.get('tipo') == 'empresa' }}>Empresa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="activo" class="form-label">Estado</label>
+                        <select class="form-select" id="activo" name="activo">
+                            <option value="">Todos</option>
+                            <option value="true" {{ 'selected' if request.args.get('activo') == 'true' }}>Activos</option>
+                            <option value="false" {{ 'selected' if request.args.get('activo') == 'false' }}>Inactivos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Clientes -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Lista de Clientes ({{ clientes|length }})</h5>
+                {% if request.args %}
+                    <a href="{{ url_for('clientes.listar') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-x"></i> Limpiar Filtros
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if clientes %}
+                    <div class="table-responsive">
+                        <div class="table-responsive">
+                            <table class="table table-hover responsive-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Tipo</th>
+                                    <th>Contacto</th>
+                                    <th>Pedidos</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cliente in clientes %}
+                                    <tr class="{{ 'table-secondary' if not cliente.is_active }}">
+                                        <td>
+                                            <div>
+                                                <strong>{{ cliente.nombre }} {% if cliente.apellido %}{{ cliente.apellido }}{% endif %}</strong>
+                                                {% if cliente.empresa %}
+                                                    <br><small class="text-muted">{{ cliente.empresa }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>                                            <span class="badge bg-{{ 'primary' if (cliente.tipo_cliente|default('particular')) == 'empresa' else 'info' }}">
+                                                {{ (cliente.tipo_cliente|default('particular')).title() }}
+                                            </span>
+                                        </td>
+                                        <td>                                            <div>
+                                                {% if cliente.email %}
+                                                    <i class="bi bi-envelope"></i> {{ cliente.email }}<br>
+                                                {% endif %}
+                                                {% if cliente.telefono %}
+                                                    <i class="bi bi-telephone"></i> {{ cliente.telefono }}
+                                                {% endif %}
+                                                {% if not cliente.email and not cliente.telefono %}
+                                                    <small class="text-muted">Sin información de contacto</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ cliente.total_pedidos or 0 }}</span>
+                                        </td>                                        <td>
+                                            <span class="badge bg-{{ 'success' if cliente.is_active else 'danger' }}">
+                                                {{ 'Activo' if cliente.is_active else 'Inactivo' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">                                <button type="button" class="btn btn-outline-info btn-ver-cliente" 
+                                                   title="Ver detalles" data-cliente-id="{{ cliente.id }}">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <a href="{{ url_for('clientes.editar', id=cliente.id) }}" 
+                                                   class="btn btn-outline-warning" title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="{{ url_for('pedidos.crear', cliente_id=cliente.id) }}" 
+                                                   class="btn btn-outline-primary" title="Nuevo pedido">
+                                                    <i class="bi bi-plus"></i>
+                                                </a>                                                {% if cliente.is_active %}
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            title="Eliminar"
+                                                            onclick="confirmarEliminacion('{{ cliente.id }}', '{{ cliente.nombre }}{% if cliente.apellido %} {{ cliente.apellido }}{% endif %}')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people fs-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">No se encontraron clientes</h4>
+                        {% if request.args %}
+                            <p class="text-muted">Intenta cambiar los filtros de búsqueda</p>
+                            <a href="{{ url_for('clientes.listar') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left"></i> Ver todos los clientes
+                            </a>                        {% else %}
+                            <p class="text-muted">Comienza agregando tu primer cliente</p>
+                            <a href="{{ url_for('clientes.nuevo') }}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> Crear primer cliente
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Ver Cliente -->
+<div class="modal fade" id="modalVerCliente" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="loadingCliente" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando información del cliente...</p>
+                </div>
+                <div id="contenidoCliente" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Información Personal</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm responsive-table">
+                                <tr>
+                                    <td><strong>Nombre:</strong></td>
+                                    <td id="clienteNombre"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Apellido:</strong></td>
+                                    <td id="clienteApellido"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td id="clienteEmail"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Teléfono:</strong></td>
+                                    <td id="clienteTelefono"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tipo:</strong></td>
+                                    <td id="clienteTipo"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Información Comercial</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm responsive-table">
+                                <tr>
+                                    <td><strong>Empresa:</strong></td>
+                                    <td id="clienteEmpresa"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NIT:</strong></td>
+                                    <td id="clienteNit"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ciudad:</strong></td>
+                                    <td id="clienteCiudad"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Departamento:</strong></td>
+                                    <td id="clienteDepartamento"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Registrado:</strong></td>
+                                    <td id="clienteCreated"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">Dirección</h6>
+                            <p id="clienteDireccion" class="text-muted"></p>
+                        </div>
+                    </div>
+                    <div class="row mt-3" id="seccionNotas" style="display: none;">
+                        <div class="col-12">
+                            <h6 class="text-primary">Notas</h6>
+                            <p id="clienteNotas" class="text-muted"></p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">Pedidos Recientes</h6>
+                            <div id="listaPedidos">
+                                <p class="text-muted">No hay pedidos recientes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="errorCliente" style="display: none;" class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span id="mensajeError"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-warning" id="btnEditarCliente">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnNuevoPedido">
+                    <i class="bi bi-plus"></i> Nuevo Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar al cliente <strong id="nombreCliente"></strong>?</p>
+                <p class="text-muted">Esta acción no se puede deshacer.</p>
+            </div>            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formEliminar" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmarEliminacion(clienteId, nombreCliente) {
+    console.log('=== DEBUG ELIMINACIÓN DE CLIENTE ===');
+    console.log('🎯 ID del cliente:', clienteId);
+    console.log('📝 Nombre del cliente:', nombreCliente);
+    console.log('🌐 URL actual:', window.location.href);
+    
+    // Verificar que los parámetros sean válidos
+    if (!clienteId) {
+        console.error('❌ ID de cliente no válido');
+        alert('Error: ID de cliente no válido');
+        return;
+    }
+    
+    // Verificar que Bootstrap esté disponible
+    if (typeof bootstrap === 'undefined') {
+        console.error('❌ Bootstrap no está disponible');
+        alert('Error: Bootstrap no está cargado. Recarga la página.');
+        return;
+    }
+    
+    // Verificar elementos del DOM
+    const deleteNameElement = document.getElementById('nombreCliente');
+    const deleteFormElement = document.getElementById('formEliminar');
+    const deleteModalElement = document.getElementById('modalEliminar');
+    
+    console.log('🔍 Verificando elementos del DOM:');
+    console.log('   nombreCliente:', deleteNameElement ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('   formEliminar:', deleteFormElement ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('   modalEliminar:', deleteModalElement ? '✅ Encontrado' : '❌ No encontrado');
+    
+    if (!deleteNameElement || !deleteFormElement || !deleteModalElement) {
+        console.error('❌ No se encontraron los elementos necesarios del modal');
+        alert('Error: Modal de confirmación no disponible. Recarga la página.');
+        return;
+    }
+    
+    try {
+        // Configurar el modal
+        console.log('🔧 Configurando modal...');
+        deleteNameElement.textContent = nombreCliente;
+        
+        const actionUrl = "{{ url_for('clientes.eliminar', id='CLIENTE_ID') }}".replace('CLIENTE_ID', clienteId);
+        deleteFormElement.action = actionUrl;
+        
+        console.log('✅ Modal configurado:');
+        console.log('   Nombre mostrado:', deleteNameElement.textContent);
+        console.log('   URL de acción:', deleteFormElement.action);
+        
+        // Mostrar el modal
+        console.log('🚀 Mostrando modal...');
+        const modal = new bootstrap.Modal(deleteModalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+        
+        modal.show();
+        console.log('✅ Modal mostrado exitosamente');
+        
+        // Listener para cuando se envíe el formulario
+        deleteFormElement.onsubmit = function(e) {
+            e.preventDefault(); // Prevenir el envío tradicional del formulario
+            console.log('📤 Enviando formulario de eliminación...');
+            console.log('   URL destino:', this.action);
+            console.log('   Método:', this.method);
+            
+            // Mostrar un indicador de carga
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                // Aplicar clase de carga
+                submitBtn.classList.add('btn-loading');
+                const originalHtml = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Eliminando...';
+                submitBtn.disabled = true;
+            }
+            
+            // Enviar solicitud usando fetch API
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('✅ Respuesta recibida:', response.status);
+                
+                if (response.redirected) {
+                    console.log('🔄 Redireccionando a:', response.url);
+                    window.location.href = response.url;
+                    return null;
+                }
+                
+                return response.json().catch(() => {
+                    // Si no podemos obtener JSON, asumimos éxito silencioso
+                    return { success: true };
+                });
+            })
+            .then(data => {
+                if (!data) return; // Si no hay datos, probablemente hubo una redirección
+                
+                if (data.success) {
+                    console.log('✅ Cliente eliminado correctamente');
+                    
+                    // Mostrar mensaje de éxito
+                    if (typeof Utils !== 'undefined' && Utils.showToast) {
+                        Utils.showToast(`Cliente "${nombreCliente}" eliminado exitosamente`, 'success');
+                    } else {
+                        alert(`Cliente "${nombreCliente}" eliminado exitosamente`);
+                    }
+                    
+                    // Disparar evento personalizado para actualizar la UI
+                    document.dispatchEvent(new CustomEvent('cliente-eliminado', { 
+                        detail: { clienteId: clienteId } 
+                    }));
+                    
+                    // Ocultar modal
+                    modal.hide();
+                    
+                    // Remover cliente de la vista con animación
+                    const clienteRow = document.querySelector(`[onclick*="${clienteId}"]`).closest('tr');
+                    if (clienteRow) {
+                        clienteRow.classList.add('table-danger');
+                        clienteRow.style.transition = 'opacity 0.3s';
+                        clienteRow.style.opacity = '0.3';
+                        setTimeout(() => {
+                            clienteRow.remove();
+                            
+                            // Verificar si no hay más clientes
+                            const tbody = document.querySelector('tbody');
+                            if (tbody && tbody.children.length === 0) {
+                                // Recargar la página para mostrar el mensaje de "no hay clientes"
+                                setTimeout(() => window.location.reload(), 500);
+                            }
+                        }, 300);
+                    } else {
+                        // Si no podemos encontrar la fila del cliente en el DOM, recargamos la página
+                        setTimeout(() => window.location.reload(), 1000);
+                    }
+                } else if (data && data.message) {
+                    console.error('❌ Error al eliminar:', data.message);
+                    
+                    // Mostrar mensaje de error
+                    if (typeof Utils !== 'undefined' && Utils.showToast) {
+                        Utils.showToast(data.message, 'error');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                    
+                    // Restaurar el botón
+                    if (submitBtn) {
+                        submitBtn.innerHTML = 'Eliminar';
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('btn-loading');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error de conexión:', error);
+                
+                // Mostrar mensaje de error
+                if (typeof Utils !== 'undefined' && Utils.showToast) {
+                    Utils.showToast('Error de conexión: ' + error.message, 'error');
+                } else {
+                    alert('Error de conexión: ' + error.message);
+                }
+                
+                // Restaurar el botón
+                if (submitBtn) {
+                    submitBtn.innerHTML = 'Eliminar';
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('btn-loading');
+                }
+            });
+            
+            // No enviar el formulario tradicional
+            return false;
+        };
+        
+    } catch (error) {
+        console.error('❌ Error al procesar eliminación:', error);
+        alert('Error al mostrar el modal: ' + error.message);
+    }
+}
+
+// Función para mostrar detalles del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    const botonesVer = document.querySelectorAll('.btn-ver-cliente');
+    const modalVerCliente = new bootstrap.Modal(document.getElementById('modalVerCliente'));
+    
+    botonesVer.forEach(function(boton) {
+        boton.addEventListener('click', function() {
+            const clienteId = this.getAttribute('data-cliente-id');
+            mostrarDetallesCliente(clienteId);
+        });
+    });
+    
+    function mostrarDetallesCliente(clienteId) {
+        // Mostrar modal y loading
+        modalVerCliente.show();
+        document.getElementById('loadingCliente').style.display = 'block';
+        document.getElementById('contenidoCliente').style.display = 'none';
+        document.getElementById('errorCliente').style.display = 'none';
+        
+        // Hacer petición AJAX
+        fetch(`{{ url_for('clientes.ver_ajax', id='CLIENTE_ID') }}`.replace('CLIENTE_ID', clienteId))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al cargar los datos del cliente');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Llenar los datos del cliente
+                const cliente = data.cliente;
+                document.getElementById('clienteNombre').textContent = cliente.nombre || 'N/A';
+                document.getElementById('clienteApellido').textContent = cliente.apellido || 'N/A';
+                document.getElementById('clienteEmail').textContent = cliente.email || 'N/A';
+                document.getElementById('clienteTelefono').textContent = cliente.telefono || 'N/A';
+                document.getElementById('clienteTipo').textContent = cliente.tipo_cliente === 'particular' ? 'Particular' : 'Empresa';
+                document.getElementById('clienteEmpresa').textContent = cliente.empresa || 'N/A';
+                document.getElementById('clienteNit').textContent = cliente.nit || 'N/A';
+                document.getElementById('clienteCiudad').textContent = cliente.ciudad || 'N/A';
+                document.getElementById('clienteDepartamento').textContent = cliente.departamento || 'N/A';
+                document.getElementById('clienteCreated').textContent = cliente.created_at || 'N/A';
+                document.getElementById('clienteDireccion').textContent = cliente.direccion || 'No especificada';
+                
+                // Mostrar notas si existen
+                if (cliente.notas && cliente.notas.trim()) {
+                    document.getElementById('clienteNotas').textContent = cliente.notas;
+                    document.getElementById('seccionNotas').style.display = 'block';
+                } else {
+                    document.getElementById('seccionNotas').style.display = 'none';
+                }
+                
+                // Mostrar pedidos
+                const listaPedidos = document.getElementById('listaPedidos');
+                if (data.pedidos && data.pedidos.length > 0) {
+                    let pedidosHtml = '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Fecha</th><th>Número</th><th>Estado</th><th>Total</th></tr></thead><tbody>';
+                    data.pedidos.forEach(function(pedido) {
+                        pedidosHtml += `<tr>
+                            <td>${pedido.fecha_pedido}</td>
+                            <td>${pedido.numero_pedido}</td>
+                            <td><span class="badge bg-info">${pedido.estado}</span></td>
+                            <td>$${pedido.total.toLocaleString()}</td>
+                        </tr>`;
+                    });
+                    pedidosHtml += '</tbody></table></div>';
+                    listaPedidos.innerHTML = pedidosHtml;
+                } else {
+                    listaPedidos.innerHTML = '<p class="text-muted">No hay pedidos recientes</p>';
+                }
+                
+                // Configurar botones de acción
+                document.getElementById('btnEditarCliente').onclick = function() {
+                    window.location.href = `{{ url_for('clientes.editar', id='CLIENTE_ID') }}`.replace('CLIENTE_ID', clienteId);
+                };
+                
+                document.getElementById('btnNuevoPedido').onclick = function() {
+                    window.location.href = `{{ url_for('pedidos.crear', cliente_id='CLIENTE_ID') }}`.replace('CLIENTE_ID', clienteId);
+                };
+                
+                // Mostrar contenido
+                document.getElementById('loadingCliente').style.display = 'none';
+                document.getElementById('contenidoCliente').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('loadingCliente').style.display = 'none';
+                document.getElementById('mensajeError').textContent = error.message;
+                document.getElementById('errorCliente').style.display = 'block';
+            });
+    }
+});
+</script>
+{% endblock %}

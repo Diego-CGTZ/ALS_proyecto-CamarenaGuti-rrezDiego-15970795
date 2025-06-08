@@ -1,0 +1,192 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Error 403 - Acceso denegado{% endblock %}
+
+{% block content %}
+<div class="container-fluid d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-8 col-lg-6">
+            <div class="modern-card text-center">
+                <div class="card-body p-5">
+                    <!-- Error Icon -->
+                    <div class="mb-4">
+                        <i class="bi bi-shield-exclamation display-1 text-warning"></i>
+                    </div>
+                    
+                    <!-- Error Code -->
+                    <h1 class="display-1 fw-bold text-warning mb-3">403</h1>
+                    
+                    <!-- Error Message -->
+                    <h2 class="h3 mb-3">Acceso Denegado</h2>
+                    <p class="text-muted mb-4">
+                        No tienes permisos para acceder a esta página o recurso.
+                    </p>
+                    
+                    <!-- Additional Info -->
+                    <div class="modern-card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="text-warning mb-3">
+                                <i class="bi bi-info-circle"></i> Información Adicional
+                            </h6>
+                            <ul class="list-unstyled text-start mb-0">
+                                <li class="mb-2">
+                                    <i class="bi bi-check text-success"></i>
+                                    Verifica que tengas los permisos necesarios
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check text-success"></i>
+                                    Contacta al administrador si necesitas acceso
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check text-success"></i>
+                                    Intenta iniciar sesión con una cuenta diferente
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-modern btn-primary">
+                            <i class="bi bi-house"></i> Ir al Dashboard
+                        </a>
+                        <button onclick="history.back()" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver Atrás
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+    
+    .solutions {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem;
+        text-align: left;
+    }
+    
+    .back-button {
+        background: var(--primary-color);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 2rem;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .back-button:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-lock"></i>
+        </div>
+        
+        <div class="error-code">403</div>
+        
+        <h1 class="h2 mb-3">Acceso Denegado</h1>
+        
+        <p class="lead text-muted mb-4">
+            No tienes permisos suficientes para acceder a esta página o realizar esta acción.
+        </p>
+        
+        <div class="access-info">
+            <h5><i class="fas fa-shield-alt me-2"></i>Información de Acceso</h5>
+            <p class="mb-2">
+                <strong>Usuario actual:</strong> 
+                {% if current_user.is_authenticated %}
+                    {{ current_user.nombre_usuario }}
+                {% else %}
+                    No autenticado
+                {% endif %}
+            </p>
+            <p class="mb-2">
+                <strong>Recurso solicitado:</strong> {{ request.endpoint or 'Recurso protegido' }}
+            </p>
+            <p class="mb-0">
+                <strong>Permisos requeridos:</strong> Administrador o usuario autorizado
+            </p>
+        </div>
+        
+        <div class="solutions">
+            <h5><i class="fas fa-key me-2"></i>¿Cómo resolver esto?</h5>
+            <ul class="mb-0">
+                {% if not current_user.is_authenticated %}
+                <li>Inicia sesión con una cuenta autorizada</li>
+                <li>Verifica que tengas las credenciales correctas</li>
+                {% else %}
+                <li>Contacta al administrador para solicitar permisos</li>
+                <li>Verifica que tu cuenta tenga los permisos necesarios</li>
+                {% endif %}
+                <li>Asegúrate de estar accediendo al recurso correcto</li>
+                <li>Si crees que esto es un error, reporta el problema</li>
+            </ul>
+        </div>
+        
+        <div class="mt-4">
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.login') }}" class="back-button">
+                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+            </a>
+            {% else %}
+            <a href="{{ url_for('main.dashboard') }}" class="back-button">
+                <i class="fas fa-home me-2"></i>Ir al Dashboard
+            </a>
+            {% endif %}
+            
+            <a href="javascript:history.back()" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-arrow-left me-2"></i>Página Anterior
+            </a>
+        </div>
+        
+        <div class="mt-4">
+            <small class="text-muted">
+                Si necesitas acceso a esta funcionalidad, contacta al administrador del sistema.
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Log access denied for security monitoring
+    console.warn('403 Access Denied:', {
+        url: window.location.href,
+        referrer: document.referrer,
+        timestamp: new Date().toISOString(),
+        user: '{{ current_user.nombre_usuario if current_user.is_authenticated else "Anonymous" }}'
+    });
+    
+    // Optional: Send security event to server
+    // fetch('/api/security-event', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //         event_type: 'access_denied',
+    //         url: window.location.href,
+    //         referrer: document.referrer,
+    //         timestamp: new Date().toISOString()
+    //     })
+    // });
+});
+</script>
+{% endblock %}

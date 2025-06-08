@@ -1,0 +1,497 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Procesos - Textiles ALS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .process-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .process-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+      .process-header {
+        background: var(--primary-color);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .process-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .process-type-dtf {
+        background: #FF6B6B;
+    }
+    
+    .process-type-sublimacion {
+        background: #4ECDC4;
+    }
+    
+    .process-type-bordado {
+        background: #45B7D1;
+    }
+    
+    .process-type-vinil {
+        background: #96CEB4;
+    }
+    
+    .pricing-table {
+        font-size: 0.9rem;
+    }
+    
+    .pricing-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .calculator-section {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+      .calculator-result {
+        background: var(--success-color);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="fas fa-cogs text-primary"></i>
+                    Gestión de Procesos
+                </h1>
+                <a href="{{ url_for('procesos.nuevo') }}" class="btn btn-primary btn-modern">
+                    <i class="bi bi-plus"></i> Nuevo Proceso
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+            <p class="text-muted">Administra los tipos de procesos de personalización y sus precios</p>
+        </div>
+    </div>
+
+    <!-- Calculator Section -->
+    <div class="calculator-section">
+        <h3 class="mb-3">
+            <i class="fas fa-calculator me-2"></i>
+            Calculadora de Precios
+        </h3>
+        
+        <form id="calculatorForm" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tipo de Proceso</label>
+                <select class="form-select" id="calcTipoProceso" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="DTF">DTF</option>
+                    <option value="SUBLIMACION">Sublimación</option>
+                    <option value="BORDADO">Bordado</option>
+                    <option value="VINIL">Vinil</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Ancho (cm)</label>
+                <input type="number" class="form-control" id="calcAncho" placeholder="10" step="0.1" min="0.1">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Alto (cm)</label>
+                <input type="number" class="form-control" id="calcAlto" placeholder="10" step="0.1" min="0.1">
+            </div>
+            
+            <div class="col-md-2" id="coloresContainer" style="display: none;">
+                <label class="form-label">Colores</label>
+                <select class="form-select" id="calcColores">
+                    <option value="1">1 Color</option>
+                    <option value="2">2 Colores</option>
+                    <option value="3">3 Colores</option>
+                    <option value="4">4+ Colores</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2" id="tamañoContainer" style="display: none;">
+                <label class="form-label">Tamaño</label>
+                <select class="form-select" id="calcTamaño">
+                    <option value="PEQUEÑO">Pequeño</option>
+                    <option value="MEDIANO">Mediano</option>
+                    <option value="GRANDE">Grande</option>
+                </select>
+            </div>
+            
+            <div class="col-md-1">
+                <label class="form-label">Cantidad</label>
+                <input type="number" class="form-control" id="calcCantidad" value="1" min="1">
+            </div>
+        </form>
+        
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div id="calculatorResult" class="calculator-result" style="display: none;">
+                    Total: $<span id="totalPrice">0.00</span>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button type="button" class="btn btn-primary" onclick="calcularPrecio()">
+                    <i class="fas fa-calculator me-2"></i>Calcular
+                </button>
+                <button type="button" class="btn btn-outline-secondary ms-2" onclick="limpiarCalculadora()">
+                    <i class="fas fa-eraser me-2"></i>Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <a href="{{ url_for('procesos.nuevo') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nuevo Proceso
+            </a>
+            <button class="btn btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#pricingModal">
+                <i class="fas fa-list me-2"></i>Ver Tarifas
+            </button>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="Buscar procesos...">
+                <select id="typeFilter" class="form-select" style="max-width: 200px;">
+                    <option value="">Todos los tipos</option>
+                    <option value="DTF">DTF</option>
+                    <option value="SUBLIMACION">Sublimación</option>
+                    <option value="BORDADO">Bordado</option>
+                    <option value="VINIL">Vinil</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processes Grid -->
+    {% if procesos %}
+    <div class="row" id="processesContainer">
+        {% for proceso in procesos %}
+        <div class="col-lg-4 col-md-6 mb-4 process-item" 
+             data-type="{{ proceso.tipo }}" 
+             data-name="{{ proceso.nombre.lower() }}">
+            <div class="card process-card h-100">
+                <div class="process-header process-type-{{ proceso.tipo.lower() }}">
+                    <div class="process-icon">
+                        {% if proceso.tipo == 'DTF' %}
+                            <i class="fas fa-print"></i>
+                        {% elif proceso.tipo == 'SUBLIMACION' %}
+                            <i class="fas fa-fire"></i>
+                        {% elif proceso.tipo == 'BORDADO' %}
+                            <i class="fas fa-cut"></i>
+                        {% elif proceso.tipo == 'VINIL' %}
+                            <i class="fas fa-layer-group"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-0">{{ proceso.nombre }}</h5>
+                    <small class="opacity-75">{{ proceso.tipo }}</small>
+                </div>
+                
+                <div class="card-body">
+                    {% if proceso.descripcion %}
+                    <p class="card-text text-muted small">
+                        {{ proceso.descripcion[:100] }}{% if proceso.descripcion|length > 100 %}...{% endif %}
+                    </p>
+                    {% endif %}
+                    
+                    <!-- Pricing Preview -->                        <div class="mt-3">
+                        <h6 class="text-muted">Precios Base:</h6>
+                        {% if proceso.tipo in ['DTF', 'SUBLIMACION'] %}
+                        <div class="small">
+                            <div class="d-flex justify-content-between">
+                                <span>Precio por metro:</span>
+                                <strong>${{ "%.2f"|format(proceso.precio_por_metro) }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Ancho disponible:</span>
+                                <strong>{{ proceso.ancho_disponible }} cm</strong>
+                            </div>
+                        </div>
+                        {% elif proceso.tipo == 'VINIL' %}
+                        <div class="small">
+                            <div class="d-flex justify-content-between">
+                                <span>Precio por cm²:</span>
+                                <strong>${{ "%.2f"|format(proceso.precio_por_cm2) }}</strong>
+                            </div>
+                        </div>
+                        {% elif proceso.tipo == 'BORDADO' %}
+                        <div class="small">
+                            <div class="d-flex justify-content-between">
+                                <span>Setup:</span>
+                                <strong>${{ "%.2f"|format(proceso.precio_setup) }}</strong>
+                            </div>
+                            {% if proceso.precios_por_tamaño %}
+                            {% for tamaño, precio in proceso.precios_por_tamaño.items() %}
+                            <div class="d-flex justify-content-between">
+                                <span>{{ tamaño.title() }}:</span>
+                                <strong>${{ "%.2f"|format(precio) }}</strong>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                  <div class="card-footer bg-transparent">
+                    <div class="btn-group w-100">
+                        <a href="{{ url_for('procesos.configurar', id=proceso.id) }}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Configurar
+                        </a>
+                        <a href="{{ url_for('procesos.ver', id=proceso.id) }}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                        <button class="btn btn-outline-danger" 
+                                onclick="confirmarEliminacion('{{ proceso.id }}', '{{ proceso.nombre }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No hay procesos configurados</h4>
+        <p class="text-muted">Comienza agregando los procesos de personalización disponibles</p>
+        <a href="{{ url_for('procesos.nuevo') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Crear Primer Proceso
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pricing Modal -->
+<div class="modal fade" id="pricingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tabla de Tarifas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <div class="table-responsive">
+                        <table class="table table-bordered pricing-table responsive-table">
+                        <thead>
+                            <tr>
+                                <th>Proceso</th>
+                                <th>Unidad</th>
+                                <th>Precio Base</th>
+                                <th>Mínimo</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>DTF</strong></td>
+                                <td>cm²</td>
+                                <td>$0.15</td>
+                                <td>$3.00</td>
+                                <td>Incluye transfer + aplicación</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sublimación</strong></td>
+                                <td>cm²</td>
+                                <td>$0.12</td>
+                                <td>$2.50</td>
+                                <td>Solo prendas blancas/claras</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Vinil</strong></td>
+                                <td>cm²</td>
+                                <td>$0.20</td>
+                                <td>$4.00</td>
+                                <td>+20% por cada color adicional</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="3"><strong>Bordado</strong></td>
+                                <td>Pequeño</td>
+                                <td>$8.00</td>
+                                <td>-</td>
+                                <td>Hasta 7x7 cm</td>
+                            </tr>
+                            <tr>
+                                <td>Mediano</td>
+                                <td>$12.00</td>
+                                <td>-</td>
+                                <td>7x7 a 15x15 cm</td>
+                            </tr>
+                            <tr>
+                                <td>Grande</td>
+                                <td>$18.00</td>
+                                <td>-</td>
+                                <td>Más de 15x15 cm</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el proceso <strong id="deleteProcessName"></strong>?</p>
+                <p class="text-danger small">Esta acción no se puede deshacer.</p>
+            </div>            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const processItems = document.querySelectorAll('.process-item');
+    const tipoProcesoSelect = document.getElementById('calcTipoProceso');
+
+    function filterProcesses() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedType = typeFilter.value;
+
+        processItems.forEach(item => {
+            const processName = item.dataset.name;
+            const processType = item.dataset.type;
+            
+            const matchesSearch = processName.includes(searchTerm);
+            const matchesType = !selectedType || processType === selectedType;
+            
+            if (matchesSearch && matchesType) {
+                item.style.display = 'block';
+                item.classList.add('fade-in');
+            } else {
+                item.style.display = 'none';
+                item.classList.remove('fade-in');
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterProcesses);
+    typeFilter.addEventListener('change', filterProcesses);
+
+    // Calculator logic
+    tipoProcesoSelect.addEventListener('change', function() {
+        const tipo = this.value;
+        const coloresContainer = document.getElementById('coloresContainer');
+        const tamañoContainer = document.getElementById('tamañoContainer');
+        
+        if (tipo === 'BORDADO') {
+            coloresContainer.style.display = 'none';
+            tamañoContainer.style.display = 'block';
+        } else if (tipo === 'VINIL') {
+            coloresContainer.style.display = 'block';
+            tamañoContainer.style.display = 'none';
+        } else {
+            coloresContainer.style.display = 'none';
+            tamañoContainer.style.display = 'none';
+        }
+    });
+});
+
+function calcularPrecio() {
+    const tipo = document.getElementById('calcTipoProceso').value;
+    const ancho = parseFloat(document.getElementById('calcAncho').value) || 0;
+    const alto = parseFloat(document.getElementById('calcAlto').value) || 0;
+    const cantidad = parseInt(document.getElementById('calcCantidad').value) || 1;
+    
+    if (!tipo) {
+        mostrarToast('Selecciona un tipo de proceso', 'warning');
+        return;
+    }
+    
+    let precio = 0;
+    const area = ancho * alto;
+    
+    switch (tipo) {
+        case 'DTF':
+            precio = Math.max(area * 0.15, 3.00);
+            break;
+        case 'SUBLIMACION':
+            precio = Math.max(area * 0.12, 2.50);
+            break;
+        case 'VINIL':
+            const colores = parseInt(document.getElementById('calcColores').value) || 1;
+            precio = Math.max(area * 0.20, 4.00);
+            if (colores > 1) {
+                precio *= (1 + (colores - 1) * 0.20);
+            }
+            break;
+        case 'BORDADO':
+            const tamaño = document.getElementById('calcTamaño').value;
+            switch (tamaño) {
+                case 'PEQUEÑO':
+                    precio = 8.00;
+                    break;
+                case 'MEDIANO':
+                    precio = 12.00;
+                    break;
+                case 'GRANDE':
+                    precio = 18.00;
+                    break;
+            }
+            break;
+    }
+    
+    const total = precio * cantidad;
+    document.getElementById('totalPrice').textContent = total.toFixed(2);
+    document.getElementById('calculatorResult').style.display = 'block';
+}
+
+function limpiarCalculadora() {
+    document.getElementById('calculatorForm').reset();
+    document.getElementById('calculatorResult').style.display = 'none';
+    document.getElementById('coloresContainer').style.display = 'none';
+    document.getElementById('tamañoContainer').style.display = 'none';
+}
+
+function confirmarEliminacion(id, nombre) {
+    document.getElementById('deleteProcessName').textContent = nombre;
+    document.getElementById('deleteForm').action = `{{ url_for('procesos.eliminar', id='PLACEHOLDER') }}`.replace('PLACEHOLDER', id);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

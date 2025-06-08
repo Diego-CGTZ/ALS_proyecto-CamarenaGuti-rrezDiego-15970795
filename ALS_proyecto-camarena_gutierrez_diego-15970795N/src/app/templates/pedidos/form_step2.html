@@ -1,0 +1,658 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Nuevo Pedido - Paso 2 - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="bi bi-bag-plus text-primary"></i> Nuevo Pedido - Configurar Productos
+    </h1>
+    <p class="text-muted mb-0">Paso 2 de 2: Selecciona y configura los productos para el pedido</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <!-- Progress indicator -->
+        <div class="mb-4">
+            <div class="row">
+                <div class="col text-center">
+                    <div class="progress-step completed">
+                        <div class="step-number"><i class="bi bi-check"></i></div>
+                        <div class="step-label">Información Básica</div>
+                    </div>
+                </div>
+                <div class="col text-center">
+                    <div class="progress-line completed"></div>
+                </div>
+                <div class="col text-center">
+                    <div class="progress-step active">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Configurar Productos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modern-card">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">
+                    <i class="bi bi-bag-plus"></i> Nuevo Pedido - Configurar Productos
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('pedidos.crear_paso2') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Hidden fields from step 1 -->
+                    <input type="hidden" name="pedido_temp_id" value="{{ pedido_temp_id }}">
+                    
+                    <!-- Products Configuration -->
+                    <div class="row">                        <!-- Product Selection Panel -->
+                        <div class="col-md-4">
+                            <div class="modern-card mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-bag"></i> Agregar Productos</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Seleccionar Producto</label>
+                                        <select class="form-select" id="productoSelect">
+                                            <option value="">Seleccione un producto...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Product Details -->
+                                    <div id="productDetails" style="display: none;">
+                                        <div class="mb-3">
+                                            <label class="form-label">Cantidad</label>
+                                            <input type="number" class="form-control" id="cantidad" min="1" value="1">
+                                        </div>
+                                        
+                                        <!-- Size Selection (conditional) -->
+                                        <div class="mb-3" id="sizeSection" style="display: none;">
+                                            <label class="form-label">Talla</label>
+                                            <select class="form-select" id="tallaSelect">
+                                                <option value="">Seleccione talla...</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Color Selection (conditional) -->
+                                        <div class="mb-3" id="colorSection" style="display: none;">
+                                            <label class="form-label">Color</label>
+                                            <select class="form-select" id="colorSelect">
+                                                <option value="">Seleccione color...</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Design Configuration -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Configurar Diseños</label>
+                                            <div class="d-grid">
+                                                <button type="button" class="btn btn-outline-primary" id="configureDesigns">
+                                                    <i class="bi bi-palette"></i> Configurar Diseños
+                                                </button>
+                                            </div>
+                                        </div>
+                                          <!-- Add Product Button -->
+                                        <div class="d-grid">
+                                            <button type="button" class="btn btn-modern btn-success" id="addProduct">
+                                                <i class="bi bi-plus"></i> Agregar Producto
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                          <!-- Products List -->
+                        <div class="col-md-8">
+                            <div class="modern-card mb-4">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0"><i class="bi bi-list"></i> Productos en el Pedido</h6>
+                                    <span class="modern-badge badge-primary" id="productCount">0 productos</span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="productsList">
+                                        <div class="text-center text-muted py-4">
+                                            <i class="bi bi-bag h1"></i>
+                                            <p>No hay productos agregados aún.</p>
+                                            <p class="small">Seleccione productos del panel izquierdo para comenzar.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                              <!-- Order Summary -->
+                            <div class="modern-card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-calculator"></i> Resumen del Pedido</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
+                                            <div class="stat-card">
+                                                <div class="stat-value" id="subtotalValue">$0.00</div>
+                                                <div class="stat-label">Subtotal</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="stat-card">
+                                                <div class="stat-value" id="utilidadValue">$0.00</div>
+                                                <div class="stat-label">Utilidad ({{ pedido_data.porcentaje_utilidad }}%)</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="stat-card">
+                                                <div class="stat-value" id="ivaValue">$0.00</div>
+                                                <div class="stat-label">IVA (16%)</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="stat-card border-primary">
+                                                <div class="stat-value text-primary" id="totalValue">$0.00</div>
+                                                <div class="stat-label">Total</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('pedidos.crear') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>                        <button type="submit" class="btn btn-modern btn-success" id="finalizarPedido" disabled>
+                            <i class="bi bi-check"></i> Finalizar Pedido
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Design Configuration Modal -->
+<div class="modal fade" id="designModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-palette"></i> Configurar Diseños
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Garment Preview -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Vista Previa</h6>
+                            </div>
+                            <div class="card-body text-center">
+                                <div id="garmentPreview" class="garment-preview">
+                                    <!-- Garment areas will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Design Configuration -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Configuración de Diseños</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="designsList">
+                                    <!-- Designs will be populated by JavaScript -->
+                                </div>
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-outline-primary" id="addDesign">
+                                        <i class="bi bi-plus"></i> Agregar Diseño
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveDesigns">Guardar Diseños</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-step {
+    display: inline-block;
+    width: 100%;
+}
+
+.step-number {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.progress-step.active .step-number {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.progress-step.completed .step-number {
+    background-color: #198754;
+    color: white;
+}
+
+.step-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.progress-step.active .step-label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.progress-step.completed .step-label {
+    color: #198754;
+    font-weight: 500;
+}
+
+.progress-line {
+    height: 2px;
+    background-color: #e9ecef;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.progress-line.completed {
+    background-color: #198754;
+}
+
+.stat-card {
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #495057;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.product-item {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa;
+}
+
+.garment-preview {
+    position: relative;
+    width: 200px;
+    height: 250px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.375rem;
+}
+
+.design-area {
+    position: absolute;
+    border: 1px dashed #6c757d;
+    background-color: rgba(13, 110, 253, 0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.design-area:hover {
+    background-color: rgba(13, 110, 253, 0.2);
+    border-color: #0d6efd;
+}
+
+.design-area.has-design {
+    background-color: rgba(25, 135, 84, 0.2);
+    border-color: #198754;
+}
+</style>
+
+<script>
+let currentProducts = [];
+let currentProductIndex = 0;
+let designModal;
+let currentDesigns = [];
+const utilidadPorcentaje = {{ pedido_data.porcentaje_utilidad | tojson }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    designModal = new bootstrap.Modal(document.getElementById('designModal'));
+    loadProducts();
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    document.getElementById('productoSelect').addEventListener('change', onProductSelect);
+    document.getElementById('addProduct').addEventListener('click', addProduct);
+    document.getElementById('configureDesigns').addEventListener('click', openDesignModal);
+    document.getElementById('addDesign').addEventListener('click', addDesign);
+    document.getElementById('saveDesigns').addEventListener('click', saveDesigns);
+}
+
+async function loadProducts() {
+    try {
+        const response = await fetch('/pedidos/api/productos');
+        const products = await response.json();
+        
+        const select = document.getElementById('productoSelect');
+        select.innerHTML = '<option value="">Seleccione un producto...</option>';
+        
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.id;
+            option.textContent = `${product.nombre} - $${product.precio_base}`;
+            option.dataset.product = JSON.stringify(product);
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading products:', error);
+    }
+}
+
+async function onProductSelect() {
+    const select = document.getElementById('productoSelect');
+    const productId = select.value;
+    
+    if (!productId) {
+        document.getElementById('productDetails').style.display = 'none';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/pedidos/api/producto/${productId}`);
+        const product = await response.json();
+        
+        // Show product details
+        document.getElementById('productDetails').style.display = 'block';
+        
+        // Configure size section
+        const sizeSection = document.getElementById('sizeSection');
+        const sizeSelect = document.getElementById('tallaSelect');
+        
+        if (product.tallas_disponibles && product.tallas_disponibles.length > 0) {
+            sizeSection.style.display = 'block';
+            sizeSelect.innerHTML = '<option value="">Seleccione talla...</option>';
+            product.tallas_disponibles.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+        } else {
+            sizeSection.style.display = 'none';
+        }
+        
+        // Configure color section
+        const colorSection = document.getElementById('colorSection');
+        const colorSelect = document.getElementById('colorSelect');
+        
+        if (product.colores_disponibles && product.colores_disponibles.length > 0) {
+            colorSection.style.display = 'block';
+            colorSelect.innerHTML = '<option value="">Seleccione color...</option>';
+            product.colores_disponibles.forEach(color => {
+                const option = document.createElement('option');
+                option.value = color;
+                option.textContent = color;
+                colorSelect.appendChild(option);
+            });
+        } else {
+            colorSection.style.display = 'none';
+        }
+        
+    } catch (error) {
+        console.error('Error loading product details:', error);
+    }
+}
+
+function addProduct() {
+    const select = document.getElementById('productoSelect');
+    const productId = select.value;
+    
+    if (!productId) {
+        alert('Por favor seleccione un producto');
+        return;
+    }
+    
+    const productData = JSON.parse(select.options[select.selectedIndex].dataset.product);
+    const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+    const talla = document.getElementById('tallaSelect').value || 'N/A';
+    const color = document.getElementById('colorSelect').value || 'N/A';
+    
+    const productItem = {
+        id: `${productId}_${Date.now()}`,
+        producto_id: productId,
+        nombre: productData.nombre,
+        precio_base: productData.precio_base,
+        cantidad: cantidad,
+        talla: talla,
+        color: color,
+        designs: [...currentDesigns],
+        subtotal: productData.precio_base * cantidad
+    };
+    
+    currentProducts.push(productItem);
+    currentDesigns = []; // Reset designs for next product
+    
+    renderProductsList();
+    updateSummary();
+    
+    // Reset form
+    select.value = '';
+    document.getElementById('productDetails').style.display = 'none';
+    document.getElementById('cantidad').value = 1;
+}
+
+function renderProductsList() {
+    const container = document.getElementById('productsList');
+    
+    if (currentProducts.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-bag h1"></i>
+                <p>No hay productos agregados aún.</p>
+                <p class="small">Seleccione productos del panel izquierdo para comenzar.</p>
+            </div>
+        `;
+        document.getElementById('finalizarPedido').disabled = true;
+        return;
+    }
+    
+    container.innerHTML = currentProducts.map(product => `
+        <div class="product-item">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">${product.nombre}</h6>
+                    <p class="mb-1 text-muted small">
+                        Cantidad: ${product.cantidad} | 
+                        Talla: ${product.talla} | 
+                        Color: ${product.color}
+                    </p>
+                    <p class="mb-1 text-muted small">
+                        Diseños: ${product.designs.length} configurados
+                    </p>
+                    <p class="mb-0 fw-bold">Subtotal: $${product.subtotal.toFixed(2)}</p>
+                </div>
+                <button type="button" class="btn btn-outline-danger btn-sm" 
+                        onclick="removeProduct('${product.id}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('productCount').textContent = `${currentProducts.length} producto${currentProducts.length !== 1 ? 's' : ''}`;
+    document.getElementById('finalizarPedido').disabled = false;
+}
+
+function removeProduct(productId) {
+    currentProducts = currentProducts.filter(p => p.id !== productId);
+    renderProductsList();
+    updateSummary();
+}
+
+function updateSummary() {
+    const subtotal = currentProducts.reduce((sum, product) => {
+        return sum + product.subtotal + (product.designs.reduce((designSum, design) => designSum + design.precio, 0) * product.cantidad);
+    }, 0);
+    
+    const utilidad = subtotal * (utilidadPorcentaje / 100);
+    const iva = subtotal * 0.16;
+    const total = subtotal + utilidad + iva;
+    
+    document.getElementById('subtotalValue').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('utilidadValue').textContent = `$${utilidad.toFixed(2)}`;
+    document.getElementById('ivaValue').textContent = `$${iva.toFixed(2)}`;
+    document.getElementById('totalValue').textContent = `$${total.toFixed(2)}`;
+}
+
+function openDesignModal() {
+    generateGarmentPreview();
+    renderDesignsList();
+    designModal.show();
+}
+
+function generateGarmentPreview() {
+    const preview = document.getElementById('garmentPreview');
+    
+    // Define design areas for t-shirt (simplified version)
+    const areas = [
+        { id: 1, name: 'Pecho Izquierdo', x: 10, y: 60, width: 40, height: 30 },
+        { id: 2, name: 'Pecho Centro', x: 75, y: 60, width: 50, height: 40 },
+        { id: 3, name: 'Pecho Derecho', x: 150, y: 60, width: 40, height: 30 },
+        { id: 4, name: 'Espalda Centro', x: 75, y: 120, width: 50, height: 40 },
+        { id: 5, name: 'Manga Izquierda', x: 10, y: 40, width: 30, height: 20 },
+        { id: 6, name: 'Manga Derecha', x: 160, y: 40, width: 30, height: 20 }
+    ];
+    
+    preview.innerHTML = areas.map(area => `
+        <div class="design-area ${currentDesigns.some(d => d.area_id === area.id) ? 'has-design' : ''}" 
+             style="left: ${area.x}px; top: ${area.y}px; width: ${area.width}px; height: ${area.height}px;"
+             onclick="selectArea(${area.id}, '${area.name}')">
+            <small>${area.id}</small>
+        </div>
+    `).join('');
+}
+
+function selectArea(areaId, areaName) {
+    const existingDesign = currentDesigns.find(d => d.area_id === areaId);
+    
+    if (existingDesign) {
+        if (confirm(`¿Desea editar el diseño en ${areaName}?`)) {
+            editDesign(areaId);
+        }
+    } else {
+        addDesignToArea(areaId, areaName);
+    }
+}
+
+function addDesignToArea(areaId, areaName) {
+    const design = {
+        area_id: areaId,
+        area_name: areaName,
+        proceso: 'DTF',
+        precio: 15.00,
+        descripcion: ''
+    };
+    
+    currentDesigns.push(design);
+    generateGarmentPreview();
+    renderDesignsList();
+}
+
+function renderDesignsList() {
+    const container = document.getElementById('designsList');
+    
+    if (currentDesigns.length === 0) {
+        container.innerHTML = '<p class="text-muted">No hay diseños configurados. Haga clic en las áreas de la prenda para agregar diseños.</p>';
+        return;
+    }
+    
+    container.innerHTML = currentDesigns.map((design, index) => `
+        <div class="border rounded p-2 mb-2">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">Área ${design.area_id}: ${design.area_name}</h6>
+                    <select class="form-select form-select-sm mb-2" onchange="updateDesignProcess(${index}, this.value)">
+                        <option value="DTF" ${design.proceso === 'DTF' ? 'selected' : ''}>DTF - $15.00</option>
+                        <option value="Sublimacion" ${design.proceso === 'Sublimacion' ? 'selected' : ''}>Sublimación - $12.00</option>
+                        <option value="Vinil" ${design.proceso === 'Vinil' ? 'selected' : ''}>Vinil - $8.00</option>
+                        <option value="Bordado" ${design.proceso === 'Bordado' ? 'selected' : ''}>Bordado - $25.00</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm" 
+                           placeholder="Descripción del diseño..."
+                           value="${design.descripcion}"
+                           onchange="updateDesignDescription(${index}, this.value)">
+                </div>
+                <button type="button" class="btn btn-outline-danger btn-sm ms-2" 
+                        onclick="removeDesign(${index})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateDesignProcess(index, proceso) {
+    const precios = {
+        'DTF': 15.00,
+        'Sublimacion': 12.00,
+        'Vinil': 8.00,
+        'Bordado': 25.00
+    };
+    
+    currentDesigns[index].proceso = proceso;
+    currentDesigns[index].precio = precios[proceso];
+    renderDesignsList();
+}
+
+function updateDesignDescription(index, descripcion) {
+    currentDesigns[index].descripcion = descripcion;
+}
+
+function removeDesign(index) {
+    currentDesigns.splice(index, 1);
+    generateGarmentPreview();
+    renderDesignsList();
+}
+
+function saveDesigns() {
+    designModal.hide();
+    // Designs are already saved in currentDesigns array
+}
+
+// Form submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    // Add products data to form
+    const productsInput = document.createElement('input');
+    productsInput.type = 'hidden';
+    productsInput.name = 'products_data';
+    productsInput.value = JSON.stringify(currentProducts);
+    this.appendChild(productsInput);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,549 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ titulo }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-bag{{ '-plus' if not pedido else '' }} text-primary"></i> 
+                {{ titulo }}
+            </h1>
+            <p class="text-muted mb-0">{{ 'Editar información del pedido' if pedido else 'Crear un nuevo pedido' }}</p>
+        </div>
+        <a href="{{ url_for('pedidos.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="modern-card">
+            <div class="card-body p-4">
+            <div class="card-body">
+                <form method="POST" action="{{ action }}">
+                    {{ form.hidden_tag() }}
+                      <!-- Información del Cliente -->
+                    <div class="modern-card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="bi bi-person text-primary"></i> 
+                                Cliente
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-floating mb-3">
+                                {{ form.cliente_id(class="form-select" + (" is-invalid" if form.cliente_id.errors else "")) }}
+                                {{ form.cliente_id.label() }}
+                                {% if form.cliente_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.cliente_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <a href="{{ url_for('clientes.nuevo') }}" target="_blank" class="text-decoration-none">
+                                        <i class="bi bi-plus"></i> Crear nuevo cliente
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalles del Pedido -->
+                    <div class="modern-card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-calendar text-primary"></i> Detalles del Pedido</h6>
+                        </div>                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.fecha_entrega(class="form-control" + (" is-invalid" if form.fecha_entrega.errors else "")) }}
+                                        {{ form.fecha_entrega.label() }}
+                                        {% if form.fecha_entrega.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.fecha_entrega.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.prioridad(class="form-select" + (" is-invalid" if form.prioridad.errors else "")) }}
+                                        {{ form.prioridad.label() }}
+                                        {% if form.prioridad.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.prioridad.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                      <!-- Precios y Utilidad -->
+                    <div class="modern-card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-calculator text-primary"></i> Precios y Utilidad</h6>
+                        </div>
+                        <div class="card-body">                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.porcentaje_utilidad.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.porcentaje_utilidad(class="form-control utility-slider" + (" is-invalid" if form.porcentaje_utilidad.errors else ""), min="0", max="100", step="0.1", id="porcentajeUtilidad") }}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    {% if form.porcentaje_utilidad.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.porcentaje_utilidad.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Margen de utilidad a aplicar sobre los costos</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Uso recomendado</label>
+                                    <div class="progress" style="height: 24px;">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%" 
+                                             aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                                            &lt; 20%
+                                        </div>
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 10%" 
+                                             aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">
+                                            20-30%
+                                        </div>
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 10%" 
+                                             aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">
+                                            30-40%
+                                        </div>
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: 60%" 
+                                             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                                            &gt; 40%
+                                        </div>
+                                    </div>
+                                    <div class="form-text text-center">El rango recomendado es 30-40%</div>
+                                </div>
+                            </div>
+
+                            {% if pedido %}
+                            <hr>                            <div class="card bg-light">
+                                <div class="card-body utility-container">
+                                    <h6 class="text-primary">Simulación con Utilidad</h6>
+                                    <div class="row mt-3">
+                                        <div class="col-md-4">
+                                            <div class="text-center mb-3">
+                                                <strong>Subtotal:</strong> 
+                                                <div class="h4">
+                                                    <span id="subtotalResumen" class="subtotal-value" data-valor="{{ pedido.subtotal }}">${{ "%.2f"|format(pedido.subtotal) }}</span>
+                                                </div>
+                                                <div class="small text-muted">Costo base</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-center mb-3 text-warning">
+                                                <strong>Utilidad:</strong>
+                                                <div class="h4">
+                                                    <span id="utilidadResumen" class="utility-value">${{ "%.2f"|format(pedido.utilidad) }}</span>
+                                                    <small class="utility-percentage">{{ "%.1f"|format(pedido.porcentaje_utilidad) }}%</small>
+                                                </div>
+                                                <div class="small text-muted">Margen de ganancia</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-center mb-3 text-primary">
+                                                <strong>Total (con IVA):</strong>
+                                                <div class="h4">
+                                                    <span id="totalResumen" class="total-value fw-bold">${{ "%.2f"|format(pedido.total) }}</span>
+                                                </div>
+                                                <div class="small text-muted">Precio final</div>
+                                            </div>
+                                        </div>
+                                    </div>                                    <div class="mt-2 text-center">
+                                        <div class="progress mb-2" style="height: 10px;">
+                                            {% set safe_total = pedido.total if pedido.total and pedido.total > 0 else 1 %}
+                                            <div class="progress-bar bg-primary" role="progressbar" 
+                                                 style="width: {{ (pedido.subtotal / safe_total * 100) | round }}%" 
+                                                 aria-valuenow="{{ (pedido.subtotal / safe_total * 100) | round }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                 style="width: {{ (pedido.utilidad / safe_total * 100) | round }}%" 
+                                                 aria-valuenow="{{ (pedido.utilidad / safe_total * 100) | round }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div class="progress-bar bg-info" role="progressbar" 
+                                                 style="width: {{ ((safe_total - pedido.subtotal - pedido.utilidad) / safe_total * 100) | round }}%" 
+                                                 aria-valuenow="{{ ((safe_total - pedido.subtotal - pedido.utilidad) / safe_total * 100) | round }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <small class="text-muted"><i class="bi bi-info-circle"></i> Los valores se actualizan al cambiar el porcentaje de utilidad</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                      <!-- Selección de Prendas (Solo para nuevos pedidos) -->
+                    {% if not pedido %}
+                    <div class="modern-card mb-4" id="garment-selection-card">
+                        <div class="card-header bg-light">
+                            <div class="form-check">
+                                {{ form.incluir_garments(id="incluirGarments") }}
+                                <label class="form-check-label" for="incluirGarments">
+                                    <h6 class="mb-0 d-inline"><i class="bi bi-plus-circle text-primary"></i> Agregar Prendas al Pedido</h6>
+                                </label>
+                            </div>
+                            <small class="text-muted">Opcional: Agrega productos directamente al crear el pedido</small>
+                        </div>
+                        <div class="card-body" id="garment-form" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.producto_id.label(class="form-label") }}
+                                    {{ form.producto_id(class="form-select", id="productoSelect") }}
+                                    <div class="form-text">Selecciona un producto de la lista</div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    {{ form.cantidad_garment.label(class="form-label") }}
+                                    {{ form.cantidad_garment(class="form-control", id="cantidadGarment") }}
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    {{ form.precio_unitario.label(class="form-label") }}
+                                    {{ form.precio_unitario(class="form-control", id="precioUnitario") }}
+                                    <div class="form-text">Precio automático</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.talla.label(class="form-label") }}
+                                    {{ form.talla(class="form-select", id="tallaSelect") }}
+                                    <option value="">Selecciona primero un producto</option>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.color.label(class="form-label") }}
+                                    {{ form.color(class="form-select", id="colorSelect") }}
+                                    <option value="">Selecciona primero un producto</option>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    {{ form.notas_garment.label(class="form-label") }}
+                                    {{ form.notas_garment(class="form-control") }}
+                                </div>
+                            </div>
+                            
+                            <!-- Resumen de la prenda -->
+                            <div class="alert alert-info" id="garment-summary" style="display: none;">
+                                <h6><i class="bi bi-info-circle"></i> Resumen de la Prenda</h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>Producto:</strong>
+                                        <span id="summary-producto">-</span>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <strong>Talla:</strong>
+                                        <span id="summary-talla">-</span>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <strong>Color:</strong>
+                                        <span id="summary-color">-</span>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <strong>Cantidad:</strong>
+                                        <span id="summary-cantidad">-</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Subtotal:</strong>
+                                        <span id="summary-subtotal" class="text-success">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                      <!-- Descuento y Notas -->
+                    <div class="modern-card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-percent text-primary"></i> Descuento y Notas</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.descuento_porcentaje.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.descuento_porcentaje(class="form-control" + (" is-invalid" if form.descuento_porcentaje.errors else ""), min="0", max="100", step="0.01") }}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    {% if form.descuento_porcentaje.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.descuento_porcentaje.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Descuento aplicado al total del pedido</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.notas.label(class="form-label") }}
+                                {{ form.notas(class="form-control" + (" is-invalid" if form.notas.errors else ""), rows="3") }}
+                                {% if form.notas.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.notas.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                      <!-- Resumen si es edición -->
+                    {% if pedido %}
+                        <div class="modern-card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-info-circle text-primary"></i> Resumen Actual</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>Estado:</strong><br>
+                                        <span class="modern-badge badge-{{ 'warning' if pedido.estado == 'pendiente' else 'info' if pedido.estado == 'en_proceso' else 'success' if pedido.estado == 'completado' else 'danger' }}">
+                                            {{ pedido.estado.replace('_', ' ').title() }}
+                                        </span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Items:</strong><br>
+                                        {{ pedido.cantidad_items or 0 }} productos
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Subtotal:</strong><br>
+                                        ${{ "%.2f"|format(pedido.subtotal) }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Total:</strong><br>
+                                        <h5 class="text-primary">${{ "%.2f"|format(pedido.total) }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('pedidos.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <div>
+                            <button type="submit" class="btn btn-modern btn-primary">
+                                <i class="bi bi-check"></i> {{ 'Actualizar Pedido' if pedido else 'Crear Pedido' }}
+                            </button>
+                            {% if not pedido %}
+                                <div class="form-text mt-2">
+                                    Después de crear el pedido podrás agregar productos y personalizaciones
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Configurar fecha mínima para entrega
+document.addEventListener('DOMContentLoaded', function() {
+    const fechaEntrega = document.getElementById('fecha_entrega');
+    if (fechaEntrega) {
+        // Establecer fecha mínima como mañana
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        fechaEntrega.min = tomorrow.toISOString().split('T')[0];
+        
+        // Si no hay fecha seleccionada, usar una semana desde hoy
+        if (!fechaEntrega.value) {
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            fechaEntrega.value = nextWeek.toISOString().split('T')[0];
+        }
+    }
+    
+    // Actualizar color de prioridad
+    const prioridad = document.getElementById('prioridad');
+    if (prioridad) {
+        prioridad.addEventListener('change', function() {
+            this.className = 'form-select';
+            if (this.value === 'urgente') {
+                this.classList.add('border-danger');
+            } else if (this.value === 'alta') {
+                this.classList.add('border-warning');
+            }
+        });
+        
+        // Aplicar color inicial
+        prioridad.dispatchEvent(new Event('change'));
+    }
+    
+    // Configurar el campo de porcentaje de utilidad
+    const porcentajeUtilidad = document.getElementById('porcentajeUtilidad');
+    if (porcentajeUtilidad) {
+        // Establecer valor predeterminado si está vacío
+        if (!porcentajeUtilidad.value) {
+            porcentajeUtilidad.value = '30.0';
+        }
+        
+        // Actualizar cálculos cuando cambie el valor
+        porcentajeUtilidad.addEventListener('input', function() {
+            const valor = parseFloat(this.value);
+            if (valor < 0) this.value = '0.0';
+            if (valor > 100) this.value = '100.0';
+            
+            // Si tenemos los elementos de resumen, actualizar en tiempo real
+            const subtotalElement = document.getElementById('subtotalResumen');
+            const utilidadElement = document.getElementById('utilidadResumen');
+            const totalElement = document.getElementById('totalResumen');
+            
+            if (subtotalElement && utilidadElement && totalElement) {
+                const subtotal = parseFloat(subtotalElement.dataset.valor || 0);
+                const utilidad = subtotal * (valor / 100);
+                utilidadElement.textContent = '$' + utilidad.toFixed(2);
+                
+                // Actualizar total (subtotal + utilidad + IVA)
+                const iva = (subtotal + utilidad) * 0.16; // 16% por defecto
+                const total = subtotal + utilidad + iva;
+                totalElement.textContent = '$' + total.toFixed(2);
+            }
+        });
+    }
+    
+    // Funcionalidad para selección de prendas
+    const incluirGarments = document.getElementById('incluirGarments');
+    const garmentForm = document.getElementById('garment-form');
+    const productoSelect = document.getElementById('productoSelect');
+    const tallaSelect = document.getElementById('tallaSelect');
+    const colorSelect = document.getElementById('colorSelect');
+    const cantidadGarment = document.getElementById('cantidadGarment');
+    const precioUnitario = document.getElementById('precioUnitario');
+    const garmentSummary = document.getElementById('garment-summary');
+    
+    if (incluirGarments && garmentForm) {
+        // Cargar productos al inicializar
+        cargarProductos();
+        
+        // Mostrar/ocultar formulario de prendas
+        incluirGarments.addEventListener('change', function() {
+            if (this.checked) {
+                garmentForm.style.display = 'block';
+            } else {
+                garmentForm.style.display = 'none';
+                limpiarFormularioPrenda();
+            }
+        });
+        
+        // Cargar productos disponibles
+        async function cargarProductos() {
+            try {
+                const response = await fetch('/pedidos/api/productos');
+                const productos = await response.json();
+                
+                productoSelect.innerHTML = '<option value="">Selecciona un producto...</option>';
+                productos.forEach(producto => {
+                    const option = document.createElement('option');
+                    option.value = producto.id;
+                    option.textContent = `${producto.nombre} - $${producto.precio_base.toFixed(2)}`;
+                    option.dataset.precio = producto.precio_base;
+                    option.dataset.categoria = producto.categoria;
+                    productoSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+            }
+        }
+        
+        // Cuando se selecciona un producto
+        productoSelect.addEventListener('change', async function() {
+            const productoId = this.value;
+            if (productoId) {
+                try {
+                    const response = await fetch(`/pedidos/api/producto/${productoId}`);
+                    const producto = await response.json();
+                    
+                    // Actualizar precio
+                    precioUnitario.value = producto.precio_base.toFixed(2);
+                    
+                    // Cargar tallas
+                    tallaSelect.innerHTML = '<option value="">Selecciona una talla...</option>';
+                    producto.tallas_disponibles.forEach(talla => {
+                        const option = document.createElement('option');
+                        option.value = talla;
+                        option.textContent = talla;
+                        tallaSelect.appendChild(option);
+                    });
+                    tallaSelect.disabled = false;
+                    
+                    // Cargar colores
+                    colorSelect.innerHTML = '<option value="">Selecciona un color...</option>';
+                    producto.colores_disponibles.forEach(color => {
+                        const option = document.createElement('option');
+                        option.value = color;
+                        option.textContent = color;
+                        colorSelect.appendChild(option);
+                    });
+                    colorSelect.disabled = false;
+                    
+                    updateGarmentSummary();
+                } catch (error) {
+                    console.error('Error cargando datos del producto:', error);
+                }
+            } else {
+                limpiarFormularioPrenda();
+            }
+        });
+        
+        // Actualizar resumen de la prenda
+        function updateGarmentSummary() {
+            const producto = productoSelect.options[productoSelect.selectedIndex];
+            const talla = tallaSelect.value;
+            const color = colorSelect.value;
+            const cantidad = parseInt(cantidadGarment.value) || 0;
+            const precio = parseFloat(precioUnitario.value) || 0;
+            
+            if (producto && producto.value && talla && color && cantidad > 0) {
+                document.getElementById('summary-producto').textContent = producto.text.split(' - ')[0];
+                document.getElementById('summary-talla').textContent = talla;
+                document.getElementById('summary-color').textContent = color;
+                document.getElementById('summary-cantidad').textContent = cantidad;
+                document.getElementById('summary-subtotal').textContent = `$${(precio * cantidad).toFixed(2)}`;
+                garmentSummary.style.display = 'block';
+            } else {
+                garmentSummary.style.display = 'none';
+            }
+        }
+        
+        // Limpiar formulario de prenda
+        function limpiarFormularioPrenda() {
+            productoSelect.value = '';
+            tallaSelect.innerHTML = '<option value="">Selecciona primero un producto</option>';
+            colorSelect.innerHTML = '<option value="">Selecciona primero un producto</option>';
+            cantidadGarment.value = '1';
+            precioUnitario.value = '';
+            tallaSelect.disabled = true;
+            colorSelect.disabled = true;
+            garmentSummary.style.display = 'none';
+        }
+        
+        // Cambios en talla, color y cantidad también actualizan el resumen
+        tallaSelect.addEventListener('change', updateGarmentSummary);
+        colorSelect.addEventListener('change', updateGarmentSummary);
+        cantidadGarment.addEventListener('input', updateGarmentSummary);
+    }
+});
+</script>
+{% endblock %}

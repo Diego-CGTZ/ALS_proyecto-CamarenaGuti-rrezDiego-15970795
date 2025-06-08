@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    {% endif %}
+    <title>{% block title %}Sistema de Gestión Textil ALS{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Modern CSS Architecture -->
+    <link href="{{ url_for('static', filename='css/variables.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/components.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/forms.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/tables.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/animations.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/responsive.css') }}" rel="stylesheet">
+    
+    <!-- Page-specific CSS -->
+    {% if request.endpoint and 'dashboard' in request.endpoint %}
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+    {% endif %}
+    {% if request.endpoint and ('pedidos' in request.endpoint or 'clientes' in request.endpoint or 'productos' in request.endpoint or 'procesos' in request.endpoint or 'reportes' in request.endpoint) %}
+    <link href="{{ url_for('static', filename='css/pages.css') }}" rel="stylesheet">
+    {% endif %}
+    
+    <!-- Legacy CSS for compatibility -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    {% block styles %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="main-wrapper">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.dashboard') }}">
+                <i class="bi bi-scissors"></i> 
+                <span>ALS Textiles</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                                <i class="bi bi-house"></i> Dashboard
+                            </a>
+                        </li>                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('pedidos.index') }}">
+                                <i class="bi bi-bag"></i> Pedidos
+                            </a>
+                        </li><li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('clientes.listar') }}">
+                                <i class="bi bi-people"></i> Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('productos.listar') }}">
+                                <i class="bi bi-box"></i> Productos
+                            </a>
+                        </li>                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('procesos.listar') }}">
+                                <i class="bi bi-gear"></i> Procesos
+                            </a>
+                        </li>                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('procesos.calculadora') }}">
+                                <i class="bi bi-calculator"></i> Calculadora
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-graph-up"></i> Reportes
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('reportes.analisis_utilidad') }}">
+                                    <i class="bi bi-percent"></i> Análisis de Utilidad
+                                </a></li>
+                                <!-- Más reportes pueden ir aquí -->
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
+                                    <i class="bi bi-key"></i> Cambiar Contraseña
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">
+                                <i class="bi bi-person-plus"></i> Registrarse
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>    <!-- Flash Messages -->
+    <div class="content-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert modern-alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {% if category == 'success' %}
+                            <i class="bi bi-check-circle alert-icon"></i>
+                        {% elif category == 'error' %}
+                            <i class="bi bi-exclamation-triangle alert-icon"></i>
+                        {% elif category == 'warning' %}
+                            <i class="bi bi-exclamation-circle alert-icon"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle alert-icon"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Main Content -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-2">
+                    <strong>ALS Textiles</strong> - Sistema de Gestión Integral
+                </p>
+                <p class="mb-0 text-muted">
+                    © 2025 - Desarrollado para la gestión profesional de procesos textiles
+                </p>
+            </div>
+        </div>
+    </footer><!-- jQuery (local y CDN fallback) -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script>window.jQuery || document.write('<script src="https://code.jquery.com/jquery-3.6.4.min.js"><\/script>')</script>
+    
+    <!-- Bootstrap JS (local y CDN fallback) -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script>window.bootstrap || document.write('<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"><\/script>')</script>
+    
+    <!-- Chart.js (only loaded when needed) -->
+    {% if request.path.startswith('/reportes') or request.path.startswith('/dashboard') %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    {% endif %}
+      <!-- Core JS Modules -->
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/forms.js') }}"></script>
+    
+    <!-- Feature Modules -->
+    {% if request.path.startswith('/pedidos') %}
+    <script src="{{ url_for('static', filename='js/pedidos.js') }}"></script>
+    {% endif %}
+    
+    {% if request.path.startswith('/clientes') %}
+    <script src="{{ url_for('static', filename='js/clientes.js') }}"></script>
+    {% endif %}
+    
+    {% if request.path.startswith('/productos') %}
+    <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
+    {% endif %}
+    
+    {% if request.path.startswith('/reportes') %}
+    <script src="{{ url_for('static', filename='js/reportes.js') }}"></script>
+    {% endif %}
+    
+    <!-- Main Application JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

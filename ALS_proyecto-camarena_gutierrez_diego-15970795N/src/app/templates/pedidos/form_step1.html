@@ -1,0 +1,198 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Nuevo Pedido - Paso 1 - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="bi bi-bag-plus text-primary"></i> Nuevo Pedido
+    </h1>
+    <p class="text-muted mb-0">Paso 1 de 2: Información básica del pedido</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Progress indicator -->
+        <div class="mb-4">
+            <div class="row">
+                <div class="col text-center">
+                    <div class="progress-step active">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Información Básica</div>
+                    </div>
+                </div>
+                <div class="col text-center">
+                    <div class="progress-line"></div>
+                </div>
+                <div class="col text-center">
+                    <div class="progress-step">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Configurar Productos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modern-card">
+            <div class="card-body p-4">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('pedidos.crear_paso1') }}">
+                    {{ form.hidden_tag() }}
+                      <!-- Información del Cliente -->
+                    <div class="modern-card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-person text-primary"></i> Cliente</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-floating mb-3">
+                                {{ form.cliente_id(class="form-select" + (" is-invalid" if form.cliente_id.errors else "")) }}
+                                {{ form.cliente_id.label() }}
+                                {% if form.cliente_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.cliente_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <a href="{{ url_for('clientes.nuevo') }}" target="_blank" class="text-decoration-none">
+                                        <i class="bi bi-plus"></i> Crear nuevo cliente
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalles del Pedido -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-calendar"></i> Detalles del Pedido</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.fecha_entrega.label(class="form-label") }}
+                                    {{ form.fecha_entrega(class="form-control" + (" is-invalid" if form.fecha_entrega.errors else "")) }}
+                                    {% if form.fecha_entrega.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.fecha_entrega.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.prioridad.label(class="form-label") }}
+                                    {{ form.prioridad(class="form-select" + (" is-invalid" if form.prioridad.errors else "")) }}
+                                    {% if form.prioridad.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.prioridad.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form.descripcion.label(class="form-label") }}
+                                {{ form.descripcion(class="form-control", rows="3", placeholder="Descripción opcional del pedido...") }}
+                                {% if form.descripcion.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.descripcion.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuración de Utilidad -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-calculator"></i> Configuración de Precios</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.porcentaje_utilidad.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.porcentaje_utilidad(class="form-control", min="0", max="100", step="0.1", value="30") }}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    {% if form.porcentaje_utilidad.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.porcentaje_utilidad.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Margen de utilidad a aplicar sobre los costos</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i>
+                                        <strong>Recomendación:</strong><br>
+                                        Un margen del 25-35% es típico en personalización textil.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de navegación -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('pedidos.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Siguiente: Configurar Productos <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-step {
+    display: inline-block;
+    width: 100%;
+}
+
+.step-number {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.progress-step.active .step-number {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.step-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.progress-step.active .step-label {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.progress-line {
+    height: 2px;
+    background-color: #e9ecef;
+    margin-top: 20px;
+    width: 100%;
+}
+</style>
+{% endblock %}

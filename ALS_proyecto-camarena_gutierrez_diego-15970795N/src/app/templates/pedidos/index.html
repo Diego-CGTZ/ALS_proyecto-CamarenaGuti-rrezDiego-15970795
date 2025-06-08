@@ -1,0 +1,359 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Pedidos - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="bi bi-bag text-primary"></i> 
+                    Gestión de Pedidos
+                </h1>
+                <a href="{{ url_for('pedidos.crear') }}" class="btn btn-primary btn-modern">
+                    <i class="bi bi-plus"></i> Nuevo Pedido
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros y Búsqueda -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-funnel text-primary"></i> 
+                    Filtros de Búsqueda
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="">Todos los estados</option>
+                                <option value="PENDIENTE" {{ 'selected' if request.args.get('estado') == 'PENDIENTE' }}>Pendiente</option>
+                                <option value="EN_PROCESO" {{ 'selected' if request.args.get('estado') == 'EN_PROCESO' }}>En Proceso</option>
+                                <option value="COMPLETADO" {{ 'selected' if request.args.get('estado') == 'COMPLETADO' }}>Completado</option>
+                                <option value="CANCELADO" {{ 'selected' if request.args.get('estado') == 'CANCELADO' }}>Cancelado</option>
+                            </select>
+                            <label for="estado">Estado</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <select class="form-select" id="cliente_id" name="cliente_id">
+                                <option value="">Todos los clientes</option>
+                                {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}" {{ 'selected' if request.args.get('cliente_id') == cliente.id }}>
+                                        {{ cliente.nombre_completo }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="cliente_id">Cliente</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="prioridad" name="prioridad">
+                                <option value="">Todas las prioridades</option>
+                                <option value="BAJA" {{ 'selected' if request.args.get('prioridad') == 'BAJA' }}>Baja</option>
+                                <option value="MEDIA" {{ 'selected' if request.args.get('prioridad') == 'MEDIA' }}>Media</option>
+                                <option value="ALTA" {{ 'selected' if request.args.get('prioridad') == 'ALTA' }}>Alta</option>
+                                <option value="URGENTE" {{ 'selected' if request.args.get('prioridad') == 'URGENTE' }}>Urgente</option>
+                            </select>
+                            <label for="prioridad">Prioridad</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <h5 class="card-title text-warning">Pendientes</h5>
+                <h2 class="text-warning">
+                    {% set pendientes = [] %}
+                    {% for p in pedidos %}
+                        {% if (p.estado.value if hasattr(p.estado, 'value') else p.estado) == 'PENDIENTE' %}
+                            {% set _ = pendientes.append(p) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ pendientes|length }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <h5 class="card-title text-info">En Proceso</h5>
+                <h2 class="text-info">
+                    {% set en_proceso = [] %}
+                    {% for p in pedidos %}
+                        {% if (p.estado.value if hasattr(p.estado, 'value') else p.estado) == 'EN_PROCESO' %}
+                            {% set _ = en_proceso.append(p) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ en_proceso|length }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <h5 class="card-title text-success">Completados</h5>
+                <h2 class="text-success">
+                    {% set completados = [] %}
+                    {% for p in pedidos %}
+                        {% if (p.estado.value if hasattr(p.estado, 'value') else p.estado) == 'COMPLETADO' %}
+                            {% set _ = completados.append(p) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ completados|length }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <h5 class="card-title text-danger">Cancelados</h5>
+                <h2 class="text-danger">
+                    {% set cancelados = [] %}
+                    {% for p in pedidos %}
+                        {% if (p.estado.value if hasattr(p.estado, 'value') else p.estado) == 'CANCELADO' %}
+                            {% set _ = cancelados.append(p) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ cancelados|length }}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Pedidos -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Lista de Pedidos ({{ pedidos|length }})</h5>
+                {% if request.args %}
+                    <a href="{{ url_for('pedidos.index') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-x"></i> Limpiar Filtros
+                    </a>
+                {% endif %}
+            </div>            <div class="card-body">
+                <!-- Debug info -->
+                <div class="alert alert-info">
+                    <strong>Debug Info:</strong> 
+                    Pedidos: {{ pedidos|length }}, 
+                    Clientes: {{ clientes|length }}, 
+                    Filtros: estado={{ request.args.get('estado', 'ninguno') }}, 
+                    cliente={{ request.args.get('cliente_id', 'ninguno') }}
+                </div>
+                
+                {% if pedidos %}
+                    <div class="table-responsive">
+                        <div class="table-responsive">
+                            <table class="table table-hover responsive-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Estado</th>
+                                    <th>Prioridad</th>
+                                    <th>Fecha Entrega</th>
+                                    <th>Total</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>                                {% for pedido in pedidos %}
+                                    {% set prioridad_str = pedido.prioridad.value if hasattr(pedido.prioridad, 'value') else pedido.prioridad %}
+                                    <tr class="{{ 'table-warning' if prioridad_str == 'URGENTE' else 'table-info' if prioridad_str == 'ALTA' }}">>                                        <td>
+                                            <strong>#{{ pedido.id | safe_slice(8) }}</strong><br>
+                                            <small class="text-muted">{{ pedido.created_at.strftime('%d/%m/%Y') }}</small>                                        </td>                                        <td>
+                                            {% if pedido.cliente_id %}
+                                                {% set cliente_encontrado = namespace(found=false) %}
+                                                {% for cliente in clientes %}
+                                                    {% if cliente.id == pedido.cliente_id and not cliente_encontrado.found %}
+                                                        {{ cliente.nombre_completo }}
+                                                        {% set cliente_encontrado.found = true %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% if not cliente_encontrado.found %}
+                                                    <span class="text-warning">Cliente #{{ pedido.cliente_id | safe_slice(8) }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-danger">Sin cliente</span>
+                                            {% endif %}
+                                        </td><td>
+                                            <select class="form-select form-select-sm estado-select" 
+                                                    data-pedido-id="{{ pedido.id }}"
+                                                    data-estado-actual="{{ pedido.estado.value if hasattr(pedido.estado, 'value') else pedido.estado }}">
+                                                <option value="PENDIENTE" {{ 'selected' if (pedido.estado.value if hasattr(pedido.estado, 'value') else pedido.estado) == 'PENDIENTE' }}>Pendiente</option>
+                                                <option value="EN_PROCESO" {{ 'selected' if (pedido.estado.value if hasattr(pedido.estado, 'value') else pedido.estado) == 'EN_PROCESO' }}>En Proceso</option>
+                                                <option value="COMPLETADO" {{ 'selected' if (pedido.estado.value if hasattr(pedido.estado, 'value') else pedido.estado) == 'COMPLETADO' }}>Completado</option>                                                <option value="CANCELADO" {{ 'selected' if (pedido.estado.value if hasattr(pedido.estado, 'value') else pedido.estado) == 'CANCELADO' }}>Cancelado</option>
+                                            </select>
+                                        </td>                                        <td>
+                                            {% set prioridad_str = pedido.prioridad.value if hasattr(pedido.prioridad, 'value') else pedido.prioridad %}
+                                            {% set prioridad_display = 'URGENTE' if prioridad_str in ['urgente', 'URGENTE'] else 'ALTA' if prioridad_str in ['alta', 'ALTA'] else 'MEDIA' if prioridad_str in ['media', 'normal', 'MEDIA'] else 'BAJA' if prioridad_str in ['baja', 'BAJA'] else prioridad_str %}
+                                            <span class="badge bg-{{ 'danger' if prioridad_display == 'URGENTE' else 'warning' if prioridad_display == 'ALTA' else 'info' if prioridad_display == 'MEDIA' else 'secondary' }}">
+                                                {{ prioridad_display.replace('_', ' ').title() if prioridad_display else 'No definida' }}
+                                            </span>
+                                        </td>
+                                        <td>                                            {{ pedido.fecha_entrega_estimada.strftime('%d/%m/%Y') if pedido.fecha_entrega_estimada else 'No definida' }}
+                                            {% set estado_str = pedido.estado.value if hasattr(pedido.estado, 'value') else pedido.estado %}
+                                            {% if pedido.fecha_entrega_estimada and pedido.fecha_entrega_estimada < now and estado_str != 'COMPLETADO' %}
+                                                <br><small class="text-danger"><i class="bi bi-exclamation-triangle"></i> Vencido</small>
+                                            {% endif %}
+                                        </td>                                        <td>
+                                            <strong>${{ "%.2f"|format(pedido.total) }}</strong><br>
+                                            <small class="text-muted">{{ pedido.num_items or 0 }} items</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('pedidos.detalle', id=pedido.id) }}" 
+                                                   class="btn btn-outline-info" title="Ver detalles">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>                                                <a href="{{ url_for('pedidos.editar', id=pedido.id) }}" 
+                                                   class="btn btn-outline-warning" title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                {% set estado_str = pedido.estado.value if hasattr(pedido.estado, 'value') else pedido.estado %}
+                                                {% if estado_str != 'COMPLETADO' %}
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            title="Eliminar"
+                                                            onclick="confirmarEliminacion('{{ pedido.id }}', '#{{ pedido.id | safe_slice(8) }}')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bag fs-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">No se encontraron pedidos</h4>
+                        {% if request.args %}
+                            <p class="text-muted">Intenta cambiar los filtros de búsqueda</p>
+                            <a href="{{ url_for('pedidos.index') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left"></i> Ver todos los pedidos
+                            </a>
+                        {% else %}
+                            <p class="text-muted">Comienza creando tu primer pedido</p>
+                            <a href="{{ url_for('pedidos.crear') }}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> Crear primer pedido
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el pedido <strong id="idPedido"></strong>?</p>
+                <p class="text-muted">Esta acción no se puede deshacer.</p>
+            </div>            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formEliminar" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Cambiar estado de pedido
+document.querySelectorAll('.estado-select').forEach(select => {
+    select.addEventListener('change', function() {
+        const pedidoId = this.dataset.pedidoId;
+        const nuevoEstado = this.value;
+        const estadoAnterior = this.dataset.estadoActual;
+        
+        // Cambiar estado vía AJAX
+        fetch(`/pedidos/${pedidoId}/cambiar-estado`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                estado: nuevoEstado
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.dataset.estadoActual = nuevoEstado;
+                // Mostrar mensaje de éxito
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-white bg-success border-0';
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            Estado actualizado a ${nuevoEstado.replace('_', ' ')}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                new bootstrap.Toast(toast).show();
+                
+                // Actualizar la fila
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert('Error al cambiar estado: ' + data.error);
+                this.value = estadoAnterior;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cambiar estado');
+            this.value = estadoAnterior;
+        });
+    });
+});
+
+function confirmarEliminacion(pedidoId, idCorto) {
+    document.getElementById('idPedido').textContent = idCorto;
+    document.getElementById('formEliminar').action = `/pedidos/${pedidoId}/eliminar`;
+    new bootstrap.Modal(document.getElementById('modalEliminar')).show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,377 @@
+{% extends "base/layout.html" %}
+
+{% block title %}
+{% if producto.id %}Editar Producto{% else %}Nuevo Producto{% endif %} - ALS Textiles
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .size-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .color-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+    
+    .usage-stats {
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        margin-top: 1.5rem;
+        background-color: #f9f9f9;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    
+    .order-info-card {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-{{ 'pencil' if producto.id else 'plus' }} text-primary"></i>
+                {% if producto.id %}Editar Producto{% else %}Nuevo Producto{% endif %}
+            </h1>
+            <p class="text-muted mb-0">{{ 'Actualizar información del producto' if producto.id else 'Crear un nuevo producto' }}</p>
+        </div>
+        <a href="{{ url_for('productos.listar') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Modern product form with page header -->
+            <div class="modern-card">
+                <div class="card-body p-4">
+                    <form method="POST" id="productoForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <!-- Form Column -->
+                            <div class="col-lg-8">
+                                <!-- Información Básica -->
+                                <div class="form-section">
+                                    <h4 class="mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Información Básica
+                                    </h4>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-floating mb-3">
+                                                {{ form.nombre(class="form-control" + (" is-invalid" if form.nombre.errors else ""), id="nombre") }}
+                                                {{ form.nombre.label() }}
+                                                {% if form.nombre.errors %}
+                                                    <div class="invalid-feedback">
+                                                        {% for error in form.nombre.errors %}{{ error }}{% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating mb-3">
+                                                {{ form.categoria(class="form-control" + (" is-invalid" if form.categoria.errors else ""), id="categoria", list="categorias") }}
+                                                {{ form.categoria.label() }}
+                                                <datalist id="categorias">
+                                                    <option value="Camisetas">
+                                                    <option value="Polos">
+                                                    <option value="Sudaderas">
+                                                    <option value="Gorras">
+                                                    <option value="Chalecos">
+                                                    <option value="Pantalones">
+                                                    <option value="Shorts">
+                                                    <option value="Vestidos">
+                                                    <option value="Faldas">
+                                                    <option value="Accesorios">
+                                                </datalist>
+                                                {% if form.categoria.errors %}
+                                                    <div class="invalid-feedback">
+                                                        {% for error in form.categoria.errors %}{{ error }}{% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-floating mb-3">
+                                                {{ form.precioBase(class="form-control" + (" is-invalid" if form.precioBase.errors else ""), id="precioBase") }}
+                                                {{ form.precioBase.label() }}
+                                                {% if form.precioBase.errors %}
+                                                    <div class="invalid-feedback">
+                                                        {% for error in form.precioBase.errors %}{{ error }}{% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating mb-3">
+                                                {{ form.stock(class="form-control" + (" is-invalid" if form.stock.errors else ""), id="stock") }}
+                                                {{ form.stock.label() }}
+                                                {% if form.stock.errors %}
+                                                    <div class="invalid-feedback">
+                                                        {% for error in form.stock.errors %}{{ error }}{% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        {{ form.descripcion(class="form-control" + (" is-invalid" if form.descripcion.errors else ""), id="descripcion", rows="4") }}
+                                        {{ form.descripcion.label() }}
+                                        {% if form.descripcion.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.descripcion.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Opciones de Personalización -->
+                                <div class="form-section mt-4">
+                                    <h4 class="mb-3">
+                                        <i class="fas fa-palette me-2"></i>
+                                        Opciones de Personalización
+                                    </h4>
+                                    
+                                    <!-- Colores Disponibles -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-paint-brush me-2"></i>
+                                            Colores Disponibles
+                                        </label>
+                                        <div class="row">
+                                            {% set colores = ['Blanco', 'Negro', 'Azul', 'Rojo', 'Verde', 'Amarillo', 'Rosa', 'Gris', 'Morado', 'Naranja'] %}
+                                            {% for color in colores %}
+                                            <div class="col-md-6 mb-2">
+                                                <div class="color-item">
+                                                    <input type="checkbox" class="form-check-input me-2" id="color_{{ color }}" 
+                                                           name="colores" value="{{ color }}"
+                                                           {% if producto.colores_disponibles and color in producto.colores_disponibles.split(',') %}checked{% endif %}>
+                                                    <label for="color_{{ color }}" class="form-check-label">{{ color }}</label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Tallas Disponibles -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-ruler me-2"></i>
+                                            Tallas Disponibles
+                                        </label>
+                                        <div class="size-grid">
+                                            {% set tallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'] %}
+                                            {% for talla in tallas %}
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="talla_{{ talla }}" 
+                                                       name="tallas" value="{{ talla }}"
+                                                       {% if producto.tallas_disponibles and talla in producto.tallas_disponibles.split(',') %}checked{% endif %}>
+                                                <label for="talla_{{ talla }}" class="form-check-label">{{ talla }}</label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Información de Pedidos asociados (solo cuando se está editando) -->
+                                {% if producto.id and estadisticas %}
+                                <div class="usage-stats mt-4">
+                                    <h5><i class="fas fa-chart-bar me-2"></i> Estadísticas de Uso</h5>
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="stat-number">{{ estadisticas.total_vendido }}</div>
+                                            <div>Unidades Vendidas</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="stat-number">{{ estadisticas.pedidos_incluido }}</div>
+                                            <div>Pedidos</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="stat-number">${{ "%.2f"|format(estadisticas.ingresos_generados) }}</div>
+                                            <div>Ingresos</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Últimos pedidos que incluyen este producto -->
+                                {% if producto.id and ultimos_pedidos %}
+                                <div class="mt-4">
+                                    <h5><i class="fas fa-shopping-cart me-2"></i> Últimos Pedidos</h5>
+                                    {% for pedido in ultimos_pedidos %}
+                                    <div class="order-info-card">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>Pedido #{{ pedido.id }}</strong> - 
+                                                <span class="text-muted">{{ pedido.cliente.nombre }}</span>
+                                                <br>
+                                                <small class="text-muted">{{ pedido.fecha_pedido.strftime('%d/%m/%Y') }}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge bg-primary">{{ pedido.estado }}</span>
+                                                <br>
+                                                <small>${{ "%.2f"|format(pedido.total) }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                {% endif %}
+
+                                <!-- Botones de Acción -->
+                                <div class="form-actions mt-4">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            {% if producto.id %}Actualizar Producto{% else %}Crear Producto{% endif %}
+                                        </button>
+                                        <a href="{{ url_for('productos.listar') }}" class="btn btn-outline-secondary btn-lg">
+                                            <i class="bi bi-x-circle me-2"></i>
+                                            Cancelar
+                                        </a>
+                                        {% if producto.id %}
+                                        <button type="button" class="btn btn-outline-danger btn-lg ms-auto" 
+                                                onclick="confirmarEliminar({{ producto.id }})">
+                                            <i class="bi bi-trash me-2"></i>
+                                            Eliminar
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview Column -->
+                            <div class="col-lg-4">
+                                <div class="sticky-top" style="top: 2rem;">
+                                    <div class="preview-card bg-light p-4 rounded">
+                                        <h5 class="mb-3">
+                                            <i class="fas fa-eye me-2"></i>
+                                            Vista Previa
+                                        </h5>
+                                        
+                                        <div class="product-preview">
+                                            <div class="product-image-placeholder bg-white border rounded mb-3 d-flex align-items-center justify-content-center" 
+                                                 style="height: 200px;">
+                                                <i class="fas fa-image fa-3x text-muted"></i>
+                                            </div>
+                                            
+                                            <h6 class="preview-name" id="previewNombre">
+                                                {{ producto.nombre if producto.nombre else 'Nombre del producto' }}
+                                            </h6>
+                                            
+                                            <p class="preview-category text-muted" id="previewCategoria">
+                                                {{ producto.categoria if producto.categoria else 'Categoría' }}
+                                            </p>
+                                            
+                                            <div class="preview-price h5 text-primary" id="previewPrecio">
+                                                ${{ "%.2f"|format(producto.precioBase) if producto.precioBase else '0.00' }}
+                                            </div>
+                                            
+                                            <p class="preview-description small" id="previewDescripcion">
+                                                {{ producto.descripcion if producto.descripcion else 'Descripción del producto...' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+{% if producto.id %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar este producto?</p>
+                <p><strong>Esta acción no se puede deshacer.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="#" class="btn btn-danger" id="deleteConfirmBtn">Eliminar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nombreInput = document.getElementById('nombre');
+    const categoriaInput = document.getElementById('categoria');
+    const precioInput = document.getElementById('precioBase');
+    const descripcionInput = document.getElementById('descripcion');
+    
+    const previewNombre = document.getElementById('previewNombre');
+    const previewCategoria = document.getElementById('previewCategoria');
+    const previewPrecio = document.getElementById('previewPrecio');
+    const previewDescripcion = document.getElementById('previewDescripcion');
+
+    // Función para actualizar la vista previa
+    function updatePreview() {
+        if (nombreInput.value) {
+            previewNombre.textContent = nombreInput.value;
+        }
+        if (categoriaInput.value) {
+            previewCategoria.textContent = categoriaInput.value;
+        }
+        if (precioInput.value) {
+            previewPrecio.textContent = '$' + parseFloat(precioInput.value).toFixed(2);
+        }
+        if (descripcionInput.value) {
+            previewDescripcion.textContent = descripcionInput.value;
+        }
+    }
+
+    // Event listeners para actualizar la vista previa en tiempo real
+    if (nombreInput) nombreInput.addEventListener('input', updatePreview);
+    if (categoriaInput) categoriaInput.addEventListener('input', updatePreview);
+    if (precioInput) precioInput.addEventListener('input', updatePreview);
+    if (descripcionInput) descripcionInput.addEventListener('input', updatePreview);
+});
+
+function confirmarEliminar(id) {
+    document.getElementById('deleteConfirmBtn').href = `/productos/eliminar/${id}`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

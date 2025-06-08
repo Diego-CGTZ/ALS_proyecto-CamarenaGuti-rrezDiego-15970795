@@ -1,0 +1,230 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Error 500 - Error del servidor - ALS Textiles{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="modern-card text-center">
+            <div class="card-body p-5">
+                <div class="error-icon">
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                </div>
+                <h1 class="error-code text-danger">500</h1>
+                <h2 class="mb-3">Error del servidor</h2>
+                <p class="text-muted mb-4">
+                    Lo sentimos, algo salió mal en nuestro servidor. Nuestro equipo ha sido notificado y está trabajando para solucionarlo.
+                </p>
+                
+                <div class="suggestions bg-light p-4 rounded mb-4">
+                    <h6 class="mb-3">¿Qué puedes hacer?</h6>
+                    <div class="row text-start">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-arrow-clockwise text-info me-2"></i>
+                                    Intenta recargar la página
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-clock text-info me-2"></i>
+                                    Espera unos minutos
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-house text-info me-2"></i>
+                                    Regresa al inicio
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-telephone text-info me-2"></i>
+                                    Contacta soporte
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-modern btn-primary me-md-2">
+                        <i class="bi bi-house"></i> Ir al Dashboard
+                    </a>
+                    <button onclick="location.reload()" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Recargar Página
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    
+    .error-content {
+        max-width: 600px;
+        width: 100%;
+    }
+    
+    .error-code {
+        font-size: 6rem;
+        font-weight: bold;
+        color: var(--danger-color, #dc3545);
+        line-height: 1;
+        margin-bottom: 1rem;
+    }
+    
+    .error-icon {
+        font-size: 4rem;
+        margin-bottom: 2rem;
+        animation: shake 2s infinite;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+</style>
+{% endblock %}
+    
+    .error-id {
+        font-family: monospace;
+        background: #fff;
+        padding: 0.5rem;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        margin-top: 1rem;
+    }
+    
+    .recovery-actions {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem;
+        text-align: left;
+    }
+    
+    .back-button {
+        background: var(--primary-color);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 2rem;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .back-button:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <div class="error-code">500</div>
+        
+        <h1 class="h2 mb-3">¡Error interno del servidor!</h1>
+        
+        <p class="lead text-muted mb-4">
+            Lo sentimos, algo salió mal en nuestros servidores. Nuestro equipo ha sido notificado 
+            y está trabajando para resolver el problema.
+        </p>
+        
+        <div class="error-details">
+            <h5><i class="fas fa-info-circle me-2"></i>Detalles del Error</h5>
+            <p class="mb-2">
+                <strong>Hora:</strong> {{ moment().format('DD/MM/YYYY HH:mm:ss') if moment else 'No disponible' }}
+            </p>
+            <p class="mb-2">
+                <strong>Código de error:</strong> 
+                <span class="text-monospace">ERR_500_{{ moment().format('YYYYMMDD_HHmmss') if moment else 'UNKNOWN' }}</span>
+            </p>
+            {% if error_id %}
+            <div class="error-id">
+                <strong>ID de seguimiento:</strong> {{ error_id }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="recovery-actions">
+            <h5><i class="fas fa-tools me-2"></i>¿Qué puedes hacer?</h5>
+            <ul>
+                <li>Espera unos minutos e intenta nuevamente</li>
+                <li>Actualiza la página (F5 o Ctrl+R)</li>
+                <li>Verifica tu conexión a internet</li>
+                <li>Si el problema persiste, contacta al soporte técnico</li>
+            </ul>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('main.dashboard') }}" class="back-button">
+                <i class="fas fa-home me-2"></i>Ir al Dashboard
+            </a>
+            <button onclick="location.reload()" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-redo me-2"></i>Intentar de nuevo
+            </button>
+        </div>
+        
+        <div class="mt-4">
+            <small class="text-muted">
+                Si necesitas ayuda, guarda el código de error y contacta al administrador del sistema.
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Log error for debugging
+    console.error('500 Internal Server Error occurred');
+    
+    // Auto-retry after 30 seconds (optional)
+    setTimeout(function() {
+        if (confirm('¿Quieres intentar recargar la página automáticamente?')) {
+            location.reload();
+        }
+    }, 30000);
+    
+    // Optional: Send error report to server
+    const errorData = {
+        error_type: '500',
+        url: window.location.href,
+        referrer: document.referrer,
+        timestamp: new Date().toISOString(),
+        user_agent: navigator.userAgent
+    };
+    
+    console.log('Error report:', errorData);
+    
+    // Uncomment to send to error tracking service
+    // fetch('/api/error-report', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(errorData)
+    // }).catch(err => console.log('Could not send error report:', err));
+});
+</script>
+{% endblock %}

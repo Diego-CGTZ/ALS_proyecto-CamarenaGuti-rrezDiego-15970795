@@ -1,0 +1,802 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ titulo }} - ALS Textiles{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-box text-primary"></i> {{ titulo }}
+            </h1>
+            <p class="text-muted mb-0">{{ 'Editar item del pedido' if item else 'Agregar nuevo item al pedido' }}</p>
+        </div>
+        <a href="{{ url_for('pedidos.detalle', id=pedido.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Pedido
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Información del pedido -->
+        <div class="modern-card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-info-circle text-primary"></i> Pedido #{{ pedido.id | safe_slice(8) }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Estado:</strong><br>
+                        <span class="modern-badge badge-{{ 'warning' if pedido.estado.value == 'PENDIENTE' else 'info' if pedido.estado.value == 'EN_PROCESO' else 'success' if pedido.estado.value == 'COMPLETADO' else 'danger' }}">
+                            {{ pedido.estado.value.replace('_', ' ').title() if hasattr(pedido.estado, 'value') else pedido.estado.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Fecha Entrega:</strong><br>
+                        {{ pedido.fecha_entrega_estimada.strftime('%d/%m/%Y') }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Subtotal Actual:</strong><br>
+                        <h6 class="text-primary mb-0">${{ "%.2f"|format(pedido.subtotal) }}</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modern-card">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ action }}" id="item_form">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="designs_data" id="designs_data">
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-floating">
+                                {{ form.producto_id(class="form-select" + (" is-invalid" if form.producto_id.errors else ""), id="producto_select") }}
+                                {{ form.producto_id.label() }}
+                                {% if form.producto_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.producto_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating">
+                                <select name="talla" class="form-select{{ ' is-invalid' if form.talla.errors else '' }}" id="talla_select" disabled>
+                                    <option value="">Selecciona primero un producto</option>
+                                </select>
+                                <label for="talla_select">{{ form.talla.label.text }}</label>
+                                {% if form.talla.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.talla.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.color.label(class="form-label") }}
+                            <select name="color" class="form-select{{ ' is-invalid' if form.color.errors else '' }}" id="color_select" disabled>
+                                <option value="">Selecciona primero un producto</option>
+                            </select>
+                            {% if form.color.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.color.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.cantidad.label(class="form-label") }}
+                            {{ form.cantidad(class="form-control" + (" is-invalid" if form.cantidad.errors else ""), id="cantidad_input", inputmode="numeric", pattern="[0-9]*", min="1", step="1") }}
+                            {% if form.cantidad.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.cantidad.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.precio_prenda.label(class="form-label") }}
+                            {{ form.precio_prenda(class="form-control" + (" is-invalid" if form.precio_prenda.errors else ""), id="precio_input", inputmode="decimal", step="0.01", min="0.01") }}
+                            {% if form.precio_prenda.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.precio_prenda.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div><!-- Información adicional del producto -->
+                    <div class="card mb-4" id="producto_info" style="display: none;">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Información del Producto</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="producto_detalle"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Diseños/Personalizaciones (solo visible si hay producto seleccionado) -->
+                    <div class="card mb-4" id="design_section" style="display: none;">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="bi bi-palette"></i> Diseños y Personalizaciones
+                            </h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="add_design_btn">
+                                <i class="bi bi-plus"></i> Agregar Diseño
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="designs_container">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    Puedes agregar múltiples diseños y personalizaciones a este ítem.
+                                    Cada diseño puede tener procesos como bordado, estampado, etc.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('pedidos.detalle', id=pedido.id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtener elementos del DOM
+        const productoSelect = document.getElementById('producto_select');
+        const tallaSelect = document.getElementById('talla_select');
+        const colorSelect = document.getElementById('color_select');
+        const precioInput = document.getElementById('precio_input');
+        const cantidadInput = document.getElementById('cantidad_input');
+        const productoInfo = document.getElementById('producto_info');
+        const productoDetalle = document.getElementById('producto_detalle');
+        const designSection = document.getElementById('design_section');
+        
+        // Verificar que todos los elementos existen
+        if (!productoSelect || !tallaSelect || !colorSelect) {
+            console.error('Error: No se encontraron todos los elementos del formulario');
+            return;
+        }
+
+        console.log('Formulario de item inicializado correctamente');
+
+        // Función para actualizar el subtotal en tiempo real
+        function actualizarSubtotal() {
+            const cantidad = parseInt(cantidadInput.value) || 0;
+            const precio = parseFloat(precioInput.value) || 0;
+            const subtotal = cantidad * precio;
+            
+            // Actualizar la información mostrada del producto
+            if (productoInfo && productoInfo.style.display !== 'none') {
+                let subtotalElement = document.getElementById('subtotal_preview');
+                
+                if (subtotalElement) {
+                    subtotalElement.textContent = `$${subtotal.toFixed(2)}`;
+                } else {
+                    // Crear un nuevo elemento para el subtotal
+                    const subtotalContainer = document.createElement('div');
+                    subtotalContainer.className = 'alert alert-info mt-3';
+                    subtotalContainer.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <span>Precio unitario: $${precio.toFixed(2)}</span>
+                            <span>Cantidad: ${cantidad}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>Subtotal:</strong>
+                            <span id="subtotal_preview" class="text-primary">$${subtotal.toFixed(2)}</span>
+                        </div>
+                    `;
+                    productoDetalle.appendChild(subtotalContainer);
+                }
+            }
+        }
+        
+        // Función para resetear los campos de talla y color
+        function resetearCamposSeleccion() {
+            tallaSelect.innerHTML = '<option value="">Selecciona primero un producto</option>';
+            colorSelect.innerHTML = '<option value="">Selecciona primero un producto</option>';
+            tallaSelect.disabled = true;
+            colorSelect.disabled = true;
+        }
+        
+        // Función para mostrar información del producto
+        function mostrarInfoProducto(data) {
+            if (productoInfo) {
+                productoInfo.style.display = 'block';
+                let infoHTML = `
+                    <p><strong>Producto:</strong> ${data.nombre}</p>
+                    <p><strong>Categoría:</strong> ${data.categoria}</p>
+                    <p><strong>Precio Base:</strong> $${data.precio_base.toFixed(2)}</p>
+                `;
+                
+                if (data.descripcion) {
+                    infoHTML += `<p><strong>Descripción:</strong> ${data.descripcion}</p>`;
+                }
+                
+                productoDetalle.innerHTML = infoHTML;
+            }
+            
+            // Mostrar sección de diseños
+            if (designSection) {
+                designSection.style.display = 'block';
+            }
+        }
+        
+        // Función para ocultar información del producto
+        function ocultarInfoProducto() {
+            if (productoInfo) {
+                productoInfo.style.display = 'none';
+            }
+            if (designSection) {
+                designSection.style.display = 'none';
+            }
+        }
+        
+        // Función para obtener CSRF token
+        function getCSRFToken() {
+            // Buscar el token en el meta tag o en el formulario
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) {
+                return metaToken.getAttribute('content');
+            }
+            
+            // Si no existe meta tag, buscar en el formulario
+            const formToken = document.querySelector('#item_form input[name="csrf_token"]');
+            if (formToken) {
+                return formToken.value;
+            }
+            
+            return null;
+        }
+
+        // Event listener principal para selección de producto
+        productoSelect.addEventListener('change', function() {
+            const productoId = this.value;
+            console.log('Producto seleccionado:', productoId);
+            
+            if (productoId) {
+                // Mostrar indicador de carga
+                tallaSelect.innerHTML = '<option value="">Cargando...</option>';
+                colorSelect.innerHTML = '<option value="">Cargando...</option>';                // Realizar fetch a la API
+                const csrfToken = getCSRFToken();
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Solo agregar CSRF token si está disponible
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+                
+                fetch(`/pedidos/api/producto/${productoId}`, {
+                    method: 'GET',
+                    headers: headers,
+                    credentials: 'same-origin'
+                })
+                    .then(response => {
+                        console.log('Respuesta recibida:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Datos del producto:', data);
+                        
+                        if (data.error) {
+                            console.error('Error en la respuesta:', data.error);
+                            alert('Error al cargar los datos del producto: ' + data.error);
+                            return;
+                        }
+                        
+                        // Actualizar precio
+                        if (precioInput) {
+                            precioInput.value = data.precio_base;
+                        }
+                        
+                        // Cargar tallas disponibles
+                        tallaSelect.disabled = false;
+                        tallaSelect.innerHTML = '<option value="">Selecciona una talla</option>';
+                        
+                        if (data.tallas_disponibles && data.tallas_disponibles.length > 0) {
+                            data.tallas_disponibles.forEach(talla => {
+                                const option = document.createElement('option');
+                                option.value = talla;
+                                option.textContent = talla;
+                                tallaSelect.appendChild(option);
+                            });
+                            console.log(`Cargadas ${data.tallas_disponibles.length} tallas`);
+                        } else {
+                            const option = document.createElement('option');
+                            option.value = "Única";
+                            option.textContent = "Talla Única";
+                            tallaSelect.appendChild(option);
+                            console.log('Cargada talla única por defecto');
+                        }
+                        
+                        // Cargar colores disponibles
+                        colorSelect.disabled = false;
+                        colorSelect.innerHTML = '<option value="">Selecciona un color</option>';
+                        
+                        if (data.colores_disponibles && data.colores_disponibles.length > 0) {
+                            data.colores_disponibles.forEach(color => {
+                                const option = document.createElement('option');
+                                option.value = color;
+                                option.textContent = color;
+                                colorSelect.appendChild(option);
+                            });
+                            console.log(`Cargados ${data.colores_disponibles.length} colores`);
+                        } else {
+                            const option = document.createElement('option');
+                            option.value = "Estándar";
+                            option.textContent = "Color Estándar";
+                            colorSelect.appendChild(option);
+                            console.log('Cargado color estándar por defecto');
+                        }
+                        
+                        // Mostrar información del producto
+                        mostrarInfoProducto(data);
+                        
+                        // Actualizar subtotal
+                        actualizarSubtotal();
+                        
+                        console.log('Producto cargado exitosamente');
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar producto:', error);
+                        alert('Error al cargar los datos del producto. Por favor, intenta nuevamente.');
+                        
+                        // Resetear campos en caso de error
+                        resetearCamposSeleccion();
+                        ocultarInfoProducto();
+                        if (precioInput) {
+                            precioInput.value = '';
+                        }
+                    });
+            } else {
+                // Si no hay producto seleccionado, resetear todo
+                console.log('Ningún producto seleccionado, reseteando campos');
+                resetearCamposSeleccion();
+                ocultarInfoProducto();
+                if (precioInput) {
+                    precioInput.value = '';
+                }
+            }
+        });
+          // Event listeners para actualizar subtotal
+        if (cantidadInput) {
+            cantidadInput.addEventListener('input', function() {
+                actualizarSubtotal();
+                actualizarTodosCostosDisenos();
+            });
+            cantidadInput.addEventListener('keyup', function() {
+                actualizarSubtotal();
+                actualizarTodosCostosDisenos();
+            });
+        }
+        
+        if (precioInput) {
+            precioInput.addEventListener('input', actualizarSubtotal);
+            precioInput.addEventListener('keyup', actualizarSubtotal);
+        }
+        
+        // Si ya hay un producto seleccionado al cargar la página (modo edición)
+        if (productoSelect.value) {
+            console.log('Producto preseleccionado detectado, cargando datos...');
+            const event = new Event('change');
+            productoSelect.dispatchEvent(event);
+        }
+        
+        // ===== FUNCIONALIDAD DE DISEÑOS =====
+        let designCounter = 0;        // Variable global para almacenar procesos
+        let procesosCargados = [];
+        
+        // Función para cargar procesos disponibles
+        async function cargarProcesos() {
+            try {
+                console.log('Cargando procesos disponibles...');
+                
+                const csrfToken = getCSRFToken();
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Solo agregar CSRF token si está disponible
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+                
+                const response = await fetch('/pedidos/api/procesos', {
+                    method: 'GET',
+                    headers: headers,
+                    credentials: 'same-origin'
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const procesos = await response.json();
+                console.log('Procesos cargados:', procesos.length);
+                
+                // Almacenar procesos globalmente
+                procesosCargados = procesos;
+                
+                return procesos;
+            } catch (error) {
+                console.error('Error cargando procesos:', error);
+                alert('Error al cargar los procesos disponibles');
+                return [];
+            }
+        }
+        
+        // Función para agregar un nuevo diseño
+        async function agregarDiseño() {
+            console.log('Agregando nuevo diseño...');
+            const procesos = await cargarProcesos();
+            if (procesos.length === 0) {
+                alert('No hay procesos disponibles para agregar diseños');
+                return;
+            }
+            
+            const designId = `design_${designCounter++}`;
+            
+            const posiciones = [
+                {value: 1, text: '1 - Pecho izquierdo'},
+                {value: 2, text: '2 - Pecho derecho'},
+                {value: 3, text: '3 - Pecho centro'},
+                {value: 4, text: '4 - Espalda superior'},
+                {value: 5, text: '5 - Espalda centro'},
+                {value: 6, text: '6 - Espalda inferior'},
+                {value: 7, text: '7 - Manga izquierda'},
+                {value: 8, text: '8 - Manga derecha'},
+                {value: 9, text: '9 - Cuello'},
+                {value: 10, text: '10 - Personalizado'}
+            ];
+            
+            const designHTML = `
+                <div class="border rounded p-3 mb-3" id="${designId}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">
+                            <i class="bi bi-brush"></i> Diseño #${designCounter}
+                        </h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarDiseño('${designId}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Proceso *</label>
+                            <select class="form-select proceso-select" name="designs[${designId}][proceso_id]" required>
+                                <option value="">Selecciona un proceso</option>
+                                ${procesos.map(proceso => 
+                                    `<option value="${proceso.id}">${proceso.nombre} - $${proceso.precio_base.toFixed(2)}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Posición *</label>
+                            <select class="form-select posicion-select" name="designs[${designId}][posicion]" required>
+                                <option value="">Selecciona una posición</option>
+                                ${posiciones.map(pos => 
+                                    `<option value="${pos.value}">${pos.text}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                    </div>
+                      <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ancho (cm)</label>
+                            <input type="number" class="form-control" name="designs[${designId}][ancho]" 
+                                   placeholder="0.0" step="0.1" min="0" inputmode="decimal">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Alto (cm)</label>
+                            <input type="number" class="form-control" name="designs[${designId}][alto]" 
+                                   placeholder="0.0" step="0.1" min="0" inputmode="decimal">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" name="designs[${designId}][descripcion]" 
+                                      rows="2" placeholder="Describe el diseño o personalización..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="alert alert-light d-flex justify-content-between align-items-center">
+                                <span>Costo estimado del diseño:</span>
+                                <strong class="text-primary" id="${designId}_cost">$0.00</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const container = document.getElementById('designs_container');
+            if (container) {
+                const infoAlert = container.querySelector('.alert-info');
+                if (infoAlert) {
+                    infoAlert.style.display = 'none';
+                }
+                
+                container.insertAdjacentHTML('beforeend', designHTML);
+                
+                // Inicializar los selects del nuevo diseño
+                initializeDesignSelects(designId);
+                
+                console.log('Diseño agregado y selects inicializados');
+            }
+        }
+        
+        // Función para eliminar un diseño
+        window.eliminarDiseño = function(designId) {
+            console.log('Eliminando diseño:', designId);
+            const designElement = document.getElementById(designId);
+            if (designElement) {
+                designElement.remove();
+                
+                // Si no quedan diseños, mostrar el mensaje informativo
+                const container = document.getElementById('designs_container');
+                if (container) {
+                    const designs = container.querySelectorAll('.border.rounded');
+                    if (designs.length === 0) {
+                        const infoAlert = container.querySelector('.alert-info');
+                        if (infoAlert) {
+                            infoAlert.style.display = 'block';
+                        }
+                    }
+                }
+                console.log(`Diseño ${designId} eliminado`);
+            }
+        };
+          // Función para actualizar el costo de un diseño
+        function actualizarCostoDiseño(designId) {
+            const procesoSelect = document.querySelector(`select[name="designs[${designId}][proceso_id]"]`);
+            const costElement = document.getElementById(`${designId}_cost`);
+            
+            if (procesoSelect && procesoSelect.value && costElement) {
+                const proceso = procesosCargados.find(p => p.id === procesoSelect.value);
+                if (proceso) {
+                    const cantidad = parseInt(cantidadInput?.value) || 1;
+                    const costoTotal = proceso.precio_base * cantidad;
+                    costElement.textContent = `$${costoTotal.toFixed(2)}`;
+                    console.log(`Costo actualizado para ${designId}: $${costoTotal.toFixed(2)}`);
+                } else {
+                    costElement.textContent = '$0.00';
+                }
+            }
+        }
+        
+        // Función para actualizar todos los costos de diseños cuando cambia la cantidad
+        function actualizarTodosCostosDisenos() {
+            const designElements = document.querySelectorAll('#designs_container .border.rounded');
+            designElements.forEach(designElement => {
+                const designId = designElement.id;
+                if (designId) {
+                    actualizarCostoDiseño(designId);
+                }
+            });
+        }
+        
+        // Función para inicializar los selects de proceso y posición de un diseño
+        function initializeDesignSelects(designId) {
+            const designContainer = document.getElementById(designId);
+            if (!designContainer) return;
+
+            const procesoSelect = designContainer.querySelector('.proceso-select');
+            const posicionSelect = designContainer.querySelector('.posicion-select');
+            const dimensionesInputs = designContainer.querySelectorAll('input[type="number"]');
+            const descripcionTextarea = designContainer.querySelector('textarea');            if (procesoSelect) {
+                procesoSelect.addEventListener('change', function() {
+                    const procesoId = this.value;
+                    
+                    // Habilitar/deshabilitar campos según la selección
+                    if (procesoId) {
+                        posicionSelect.disabled = false;
+                        dimensionesInputs.forEach(input => input.disabled = false);
+                    } else {
+                        posicionSelect.disabled = true;
+                        dimensionesInputs.forEach(input => input.disabled = true);
+                    }
+                    
+                    // Actualizar costo del diseño
+                    actualizarCostoDiseño(designId);
+                });
+            }
+
+            if (posicionSelect) {
+                posicionSelect.addEventListener('change', function() {
+                    const posicion = this.value;
+                    
+                    // Si es posición personalizada, requerir descripción
+                    if (posicion === '10' && descripcionTextarea) {
+                        descripcionTextarea.required = true;
+                        descripcionTextarea.placeholder = 'Describe la ubicación exacta del diseño...';
+                    } else if (descripcionTextarea) {
+                        descripcionTextarea.required = false;
+                        descripcionTextarea.placeholder = 'Descripción opcional del diseño...';
+                    }
+                });
+            }
+        }
+
+        // Event listener para el botón agregar diseño
+        const addDesignBtn = document.getElementById('add_design_btn');
+        if (addDesignBtn) {
+            addDesignBtn.addEventListener('click', agregarDiseño);
+            console.log('Event listener para agregar diseño configurado');
+        }
+        
+        // Función para validar el formulario antes del envío
+        function validarFormulario() {
+            let esValido = true;
+            const errores = [];
+            
+            // Validar producto seleccionado
+            if (!productoSelect.value) {
+                errores.push('Debe seleccionar un producto');
+                productoSelect.classList.add('is-invalid');
+                esValido = false;
+            } else {
+                productoSelect.classList.remove('is-invalid');
+            }
+            
+            // Validar talla si está habilitada
+            if (!tallaSelect.disabled && !tallaSelect.value) {
+                errores.push('Debe seleccionar una talla');
+                tallaSelect.classList.add('is-invalid');
+                esValido = false;
+            } else {
+                tallaSelect.classList.remove('is-invalid');
+            }
+            
+            // Validar color si está habilitado
+            if (!colorSelect.disabled && !colorSelect.value) {
+                errores.push('Debe seleccionar un color');
+                colorSelect.classList.add('is-invalid');
+                esValido = false;
+            } else {
+                colorSelect.classList.remove('is-invalid');
+            }
+            
+            // Validar cantidad
+            const cantidad = parseInt(cantidadInput?.value) || 0;
+            if (cantidad <= 0) {
+                errores.push('La cantidad debe ser mayor a 0');
+                cantidadInput?.classList.add('is-invalid');
+                esValido = false;
+            } else {
+                cantidadInput?.classList.remove('is-invalid');
+            }
+            
+            // Validar precio
+            const precio = parseFloat(precioInput?.value) || 0;
+            if (precio <= 0) {
+                errores.push('El precio debe ser mayor a 0');
+                precioInput?.classList.add('is-invalid');
+                esValido = false;
+            } else {
+                precioInput?.classList.remove('is-invalid');
+            }
+            
+            // Validar diseños si existen
+            const designElements = document.querySelectorAll('#designs_container .border.rounded');
+            designElements.forEach((designElement, index) => {
+                const designId = designElement.id;
+                const procesoSelect = designElement.querySelector('.proceso-select');
+                const posicionSelect = designElement.querySelector('.posicion-select');
+                
+                if (procesoSelect && !procesoSelect.value) {
+                    errores.push(`Diseño ${index + 1}: Debe seleccionar un proceso`);
+                    procesoSelect.classList.add('is-invalid');
+                    esValido = false;
+                } else if (procesoSelect) {
+                    procesoSelect.classList.remove('is-invalid');
+                }
+                
+                if (posicionSelect && !posicionSelect.value) {
+                    errores.push(`Diseño ${index + 1}: Debe seleccionar una posición`);
+                    posicionSelect.classList.add('is-invalid');
+                    esValido = false;
+                } else if (posicionSelect) {
+                    posicionSelect.classList.remove('is-invalid');
+                }
+                
+                // Validar descripción si es posición personalizada
+                if (posicionSelect && posicionSelect.value === '10') {
+                    const descripcionTextarea = designElement.querySelector('textarea');
+                    if (descripcionTextarea && !descripcionTextarea.value.trim()) {
+                        errores.push(`Diseño ${index + 1}: Debe proporcionar una descripción para posición personalizada`);
+                        descripcionTextarea.classList.add('is-invalid');
+                        esValido = false;
+                    } else if (descripcionTextarea) {
+                        descripcionTextarea.classList.remove('is-invalid');
+                    }
+                }
+            });
+            
+            // Mostrar errores si los hay
+            if (!esValido && errores.length > 0) {
+                const mensaje = 'Por favor corrija los siguientes errores:\n\n' + errores.join('\n');
+                alert(mensaje);
+            }
+            
+            return esValido;
+        }
+
+        // Capturar datos de diseños antes de enviar el formulario        const itemForm = document.getElementById('item_form');
+        if (itemForm) {
+            itemForm.addEventListener('submit', function(e) {
+                console.log('Formulario enviándose, validando...');
+                
+                // Validar formulario antes de enviar
+                if (!validarFormulario()) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                console.log('Validación exitosa, capturando datos de diseños...');
+                const designsData = {};
+                const designElements = document.querySelectorAll('#designs_container .border.rounded');
+                
+                designElements.forEach(designElement => {
+                    const designId = designElement.id;
+                    const formData = {};
+                    
+                    // Capturar todos los campos del diseño
+                    const inputs = designElement.querySelectorAll('select, input, textarea');
+                    inputs.forEach(input => {
+                        if (input.name && input.value) {
+                            const fieldName = input.name.replace(`designs[${designId}][`, '').replace(']', '');
+                            formData[fieldName] = input.value;
+                        }
+                    });
+                    
+                    if (Object.keys(formData).length > 0) {
+                        designsData[designId] = formData;
+                    }
+                });
+                
+                // Guardar los datos de diseños en el campo oculto
+                const designsDataInput = document.getElementById('designs_data');
+                if (designsDataInput) {
+                    designsDataInput.value = JSON.stringify(designsData);
+                    console.log('Datos de diseños capturados:', designsData);
+                }
+                
+                return true;
+            });
+        }
+        
+        console.log('Inicialización completa del formulario de item');
+    });
+</script>
+{% endblock %}

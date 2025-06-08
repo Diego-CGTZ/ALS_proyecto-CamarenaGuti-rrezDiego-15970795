@@ -1,0 +1,75 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Pedidos - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1>🔧 DEBUG - Página de Pedidos</h1>
+    
+    <div class="alert alert-warning">
+        <h4>Información de Debug:</h4>
+        <ul>
+            <li><strong>Total pedidos:</strong> {{ pedidos|length }}</li>
+            <li><strong>Total clientes:</strong> {{ clientes|length }}</li>
+            <li><strong>Tipo de pedidos:</strong> {{ pedidos.__class__.__name__ if pedidos else 'None' }}</li>
+            <li><strong>Tipo de clientes:</strong> {{ clientes.__class__.__name__ if clientes else 'None' }}</li>
+        </ul>
+    </div>
+    
+    {% if pedidos %}
+        <div class="alert alert-success">
+            <h4>✅ Pedidos encontrados:</h4>            <ol>
+                {% for pedido in pedidos %}
+                    {% if loop.index <= 5 %}
+                        <li>
+                            <strong>ID:</strong> {{ pedido.id }}<br>
+                            <strong>Cliente ID:</strong> {{ pedido.cliente_id }}<br>
+                            <strong>Estado:</strong> {{ pedido.estado }}<br>
+                            <strong>Total:</strong> {{ pedido.total if pedido.total else 'No definido' }}<br>
+                            <hr>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if pedidos|length > 5 %}
+                    <li><em>... y {{ pedidos|length - 5 }} más</em></li>
+                {% endif %}
+            </ol>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <h4>❌ No hay pedidos disponibles</h4>
+            <p>El array de pedidos está vacío o es None.</p>
+        </div>
+    {% endif %}
+    
+    {% if clientes %}
+        <div class="alert alert-info">
+            <h4>👥 Clientes encontrados:</h4>            <ol>
+                {% for cliente in clientes %}
+                    {% if loop.index <= 3 %}
+                        <li>
+                            <strong>ID:</strong> {{ cliente.id }}<br>
+                            <strong>Nombre:</strong> {{ cliente.nombre if cliente.nombre else 'No definido' }}<br>
+                            <strong>Email:</strong> {{ cliente.email if cliente.email else 'No definido' }}<br>
+                            <hr>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if clientes|length > 3 %}
+                    <li><em>... y {{ clientes|length - 3 }} más</em></li>
+                {% endif %}
+            </ol>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <h4>⚠️ No hay clientes disponibles</h4>
+            <p>El array de clientes está vacío o es None.</p>
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">← Volver al Dashboard</a>
+        <a href="{{ url_for('pedidos.crear') }}" class="btn btn-primary">+ Crear Pedido</a>
+    </div>
+</div>
+{% endblock %}

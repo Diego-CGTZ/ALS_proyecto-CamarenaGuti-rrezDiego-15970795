@@ -1,0 +1,475 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Productos - Textiles ALS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="page-title">
+                    <i class="bi bi-box text-primary"></i> 
+                    Catálogo de Productos
+                </h1>
+                <a href="{{ url_for('productos.nuevo') }}" class="btn btn-primary btn-modern">
+                    <i class="bi bi-plus"></i> Nuevo Producto
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros y Búsqueda -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-filter text-primary"></i> 
+                    Filtrar Productos
+                </h6>
+            </div>
+            <div class="card-body">
+                <!-- Contenido de filtros aquí -->
+            </div>
+        </div>
+    </div>
+</div>
+                        <i class="fas fa-tshirt me-3"></i>
+                        Catálogo de Productos
+                    </h1>
+                    <p class="mb-0 opacity-75">Gestiona el catálogo de prendas y productos disponibles</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="product-stats">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="mb-0">{{ productos|length }}</h4>
+                                <small>Total Productos</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="mb-0">{{ categorias|length if categorias else 0 }}</h4>
+                                <small>Categorías</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Actions Bar -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <a href="{{ url_for('productos.nuevo') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Nuevo Producto
+                </a>
+                <button class="btn btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="fas fa-upload me-2"></i>Importar
+                </button>
+            </div>
+            <div class="col-md-6">
+                <!-- Search and Filters -->
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" 
+                           placeholder="Buscar productos...">
+                    <select id="categoryFilter" class="form-select" style="max-width: 200px;">
+                        <option value="">Todas las categorías</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria }}">{{ categoria }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-outline-secondary" type="button" onclick="clearFilters()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        {% if productos %}
+        <div class="row" id="productsContainer">
+            {% for producto in productos %}            <div class="col-lg-4 col-md-6 mb-4 product-item" 
+                 data-category="{{ producto.categoria }}" 
+                 data-name="{{ producto.nombre.lower() }}"
+                 data-producto-id="{{ producto.id }}"
+                 data-producto-nombre="{{ producto.nombre }}">
+                <div class="card product-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-secondary category-badge">{{ producto.categoria }}</span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                        data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ url_for('productos.editar', id=producto.id) }}">
+                                        <i class="fas fa-edit me-2"></i>Editar
+                                    </a></li>                                    <li><a class="dropdown-item" href="{{ url_for('productos.ver', id=producto.id) }}">
+                                        <i class="fas fa-eye me-2"></i>Ver Detalles
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger action-delete" href="#" 
+                                           data-action="delete-producto"
+                                           data-producto-id="{{ producto.id }}"
+                                           data-producto-nombre="{{ producto.nombre }}"
+                                           onclick="confirmarEliminacion('{{ producto.id }}', '{{ producto.nombre }}')">
+                                        <i class="fas fa-trash me-2"></i>Eliminar
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <h5 class="card-title">{{ producto.nombre }}</h5>
+                        
+                        {% if producto.descripcion %}
+                        <p class="card-text text-muted small">
+                            {{ producto.descripcion[:100] }}{% if producto.descripcion|length > 100 %}...{% endif %}
+                        </p>
+                        {% endif %}
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="price-tag">${{ "%.2f"|format(producto.precio_base) }}</span>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('productos.editar', id=producto.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>                                    <a href="{{ url_for('productos.ver', id=producto.id) }}" 
+                                       class="btn btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-tshirt fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No hay productos registrados</h4>
+            <p class="text-muted">Comienza agregando tu primer producto al catálogo</p>
+            <a href="{{ url_for('productos.nuevo') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Crear Primer Producto
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Importar Productos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Selecciona un archivo CSV para importar productos:</p>
+                <input type="file" class="form-control" accept=".csv" id="importFile">
+                <small class="form-text text-muted mt-2">
+                    Formato: nombre,categoria,precio_base,descripcion
+                </small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="importarProductos()">Importar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
+                    <h6>¿Estás seguro de que deseas eliminar este producto?</h6>
+                </div>
+                <div class="alert alert-warning">
+                    <strong>Producto:</strong> <span id="deleteProductName"></span>
+                </div>
+                <p class="text-danger small mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Esta acción marcará el producto como inactivo y no se podrá deshacer.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Eliminar Producto
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/productos.css') }}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/productos.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const productItems = document.querySelectorAll('.product-item');
+
+    function filterProducts() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+
+        productItems.forEach(item => {
+            const productName = item.dataset.name;
+            const productCategory = item.dataset.category;
+            
+            const matchesSearch = productName.includes(searchTerm);
+            const matchesCategory = !selectedCategory || productCategory === selectedCategory;
+            
+            if (matchesSearch && matchesCategory) {
+                item.style.display = 'block';
+                item.classList.add('fade-in');
+            } else {
+                item.style.display = 'none';
+                item.classList.remove('fade-in');
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterProducts);
+    categoryFilter.addEventListener('change', filterProducts);
+});
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('categoryFilter').value = '';
+    document.querySelectorAll('.product-item').forEach(item => {
+        item.style.display = 'block';
+    });
+}
+
+function confirmarEliminacion(id, nombre) {
+    console.log('=== DEBUG ELIMINACIÓN ===');
+    console.log('🎯 ID del producto:', id);
+    console.log('📝 Nombre del producto:', nombre);
+    console.log('🌐 URL actual:', window.location.href);
+    
+    // Verificar que los parámetros sean válidos
+    if (!id) {
+        console.error('❌ ID de producto no válido');
+        alert('Error: ID de producto no válido');
+        return;
+    }
+    
+    // Verificar que Bootstrap esté disponible
+    if (typeof bootstrap === 'undefined') {
+        console.error('❌ Bootstrap no está disponible');
+        alert('Error: Bootstrap no está cargado. Recarga la página.');
+        return;
+    }
+    
+    // Verificar elementos del DOM
+    const deleteNameElement = document.getElementById('deleteProductName');
+    const deleteFormElement = document.getElementById('deleteForm');
+    const deleteModalElement = document.getElementById('deleteModal');
+    
+    console.log('🔍 Verificando elementos del DOM:');
+    console.log('   deleteProductName:', deleteNameElement ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('   deleteForm:', deleteFormElement ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('   deleteModal:', deleteModalElement ? '✅ Encontrado' : '❌ No encontrado');
+    
+    if (!deleteNameElement || !deleteFormElement || !deleteModalElement) {
+        console.error('❌ No se encontraron los elementos necesarios del modal');
+        alert('Error: Modal de confirmación no disponible. Recarga la página.');
+        return;
+    }
+    
+    try {
+        // Configurar el modal
+        console.log('🔧 Configurando modal...');
+        deleteNameElement.textContent = nombre;
+        
+        const actionUrl = '/productos/' + id + '/eliminar';
+        deleteFormElement.action = actionUrl;
+        
+        console.log('✅ Modal configurado:');
+        console.log('   Nombre mostrado:', deleteNameElement.textContent);
+        console.log('   URL de acción:', deleteFormElement.action);
+        
+        // Mostrar el modal
+        console.log('🚀 Mostrando modal...');
+        const modal = new bootstrap.Modal(deleteModalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+        
+        modal.show();
+        console.log('✅ Modal mostrado exitosamente');
+        
+        // Listener para cuando se envíe el formulario
+        deleteFormElement.onsubmit = function(e) {
+            e.preventDefault(); // Prevenir el envío tradicional del formulario
+            console.log('📤 Enviando formulario de eliminación...');
+            console.log('   URL destino:', this.action);
+            console.log('   Método:', this.method);
+            
+            // Mostrar un indicador de carga
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                // Aplicar clase de carga
+                submitBtn.classList.add('btn-loading');
+                const originalHtml = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="btn-text">' + originalHtml + '</span>';
+                submitBtn.disabled = true;
+            }
+            
+            // Enviar solicitud usando fetch API
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('✅ Respuesta recibida:', response.status);
+                
+                if (response.redirected) {
+                    console.log('🔄 Redireccionando a:', response.url);
+                    window.location.href = response.url;
+                    return null;
+                }
+                
+                return response.json().catch(() => {
+                    // Si no podemos obtener JSON, asumimos éxito silencioso
+                    return { success: true };
+                });
+            })
+            .then(data => {
+                if (!data) return; // Si no hay datos, probablemente hubo una redirección
+                  if (data.success) {
+                    console.log('✅ Producto eliminado correctamente');
+                    
+                    // Mostrar mensaje de éxito (comprobando si Utils está disponible)
+                    if (typeof Utils !== 'undefined' && Utils.showToast) {
+                        Utils.showToast(`Producto "${nombre}" eliminado exitosamente`, 'success');
+                    } else {
+                        alert(`Producto "${nombre}" eliminado exitosamente`);
+                    }
+                    
+                    // Disparar evento personalizado para actualizar la UI
+                    document.dispatchEvent(new CustomEvent('producto-eliminado', { 
+                        detail: { productoId: id } 
+                    }));
+                    
+                    // Ocultar modal
+                    modal.hide();
+                    
+                    // Remover producto de la vista con animación
+                    const productCard = document.querySelector(`[data-producto-id="${id}"]`).closest('.product-item');
+                    if (productCard) {
+                        productCard.classList.add('fade-out');
+                        setTimeout(() => {
+                            productCard.remove();
+                            
+                            // Mostrar mensaje si no hay productos
+                            if (document.querySelectorAll('.product-item').length === 0) {
+                                document.getElementById('productsContainer').innerHTML = `
+                                    <div class="col-12">
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-tshirt fa-3x text-muted mb-3"></i>
+                                            <h4 class="text-muted">No hay productos disponibles</h4>
+                                            <p class="text-muted">No se encontraron productos con los criterios seleccionados</p>
+                                            <button class="btn btn-outline-secondary mt-2" onclick="clearFilters()">
+                                                <i class="fas fa-sync me-2"></i>Limpiar filtros
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }, 300);
+                    } else {
+                        // Si no podemos encontrar el producto en el DOM, recargamos la página
+                        setTimeout(() => window.location.reload(), 1000);
+                    }                } else if (data && data.message) {
+                    console.error('❌ Error al eliminar:', data.message);
+                    
+                    // Mostrar mensaje de error (comprobando si Utils está disponible)
+                    if (typeof Utils !== 'undefined' && Utils.showToast) {
+                        Utils.showToast(data.message, 'error');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                    
+                    // Restaurar el botón
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-trash me-2"></i>Eliminar Producto';
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('btn-loading');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error de conexión:', error);
+                
+                // Mostrar mensaje de error
+                if (typeof Utils !== 'undefined' && Utils.showToast) {
+                    Utils.showToast('Error de conexión: ' + error.message, 'error');
+                } else {
+                    alert('Error de conexión: ' + error.message);
+                }
+                
+                // Restaurar el botón
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-trash me-2"></i>Eliminar Producto';
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('btn-loading');
+                }
+            });
+            
+            // No enviar el formulario tradicional
+            return false;
+        };
+        
+    } catch (error) {
+        console.error('❌ Error al procesar eliminación:', error);
+        alert('Error al mostrar el modal: ' + error.message);
+    }
+}
+
+function importarProductos() {
+    // Delegamos la funcionalidad al ProductosManager
+    if (typeof ProductosManager !== 'undefined' && ProductosManager.importarProductos) {
+        ProductosManager.importarProductos();
+    } else {
+        console.error('ProductosManager no está disponible');
+        alert('Error: No se pudo acceder al gestor de productos');
+    }
+}
+</script>
+{% endblock %}

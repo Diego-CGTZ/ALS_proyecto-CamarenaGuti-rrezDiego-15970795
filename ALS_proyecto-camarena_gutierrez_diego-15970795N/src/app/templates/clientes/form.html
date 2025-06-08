@@ -1,0 +1,237 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ titulo }} - ALS Textiles{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-person{{ '-plus' if not cliente else '' }} text-primary"></i> 
+                {{ titulo }}
+            </h1>
+            <p class="text-muted mb-0">{{ 'Editar información del cliente' if cliente else 'Crear un nuevo cliente' }}</p>
+        </div>
+        <a href="{{ url_for('clientes.listar') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ action }}">
+                    {{ form.hidden_tag() }}
+                      <!-- Información Personal -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-person text-primary"></i> Información Personal</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.nombre(class="form-control" + (" is-invalid" if form.nombre.errors else "")) }}
+                                        {{ form.nombre.label() }}
+                                        {% if form.nombre.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.nombre.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.apellido(class="form-control" + (" is-invalid" if form.apellido.errors else "")) }}
+                                        {{ form.apellido.label() }}
+                                        {% if form.apellido.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.apellido.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                        {{ form.email.label() }}
+                                        {% if form.email.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.email.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.telefono(class="form-control" + (" is-invalid" if form.telefono.errors else "")) }}
+                                        {{ form.telefono.label() }}
+                                        {% if form.telefono.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.telefono.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de Empresa -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-building"></i> Información de Empresa (Opcional)</h6>
+                        </div>                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.tipo_cliente(class="form-select" + (" is-invalid" if form.tipo_cliente.errors else "")) }}
+                                        {{ form.tipo_cliente.label() }}
+                                        {% if form.tipo_cliente.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.tipo_cliente.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.empresa(class="form-control" + (" is-invalid" if form.empresa.errors else "")) }}
+                                        {{ form.empresa.label() }}
+                                        {% if form.empresa.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.empresa.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                              <div class="mb-3">
+                                <div class="form-floating">
+                                    {{ form.nit(class="form-control" + (" is-invalid" if form.nit.errors else "")) }}
+                                    {{ form.nit.label() }}
+                                    {% if form.nit.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.nit.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dirección -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-geo-alt"></i> Dirección</h6>
+                        </div>                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-floating">
+                                    {{ form.direccion(class="form-control" + (" is-invalid" if form.direccion.errors else "")) }}
+                                    {{ form.direccion.label() }}
+                                    {% if form.direccion.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.direccion.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                              <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.ciudad(class="form-control" + (" is-invalid" if form.ciudad.errors else "")) }}
+                                        {{ form.ciudad.label() }}
+                                        {% if form.ciudad.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.ciudad.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-floating">
+                                        {{ form.departamento(class="form-control" + (" is-invalid" if form.departamento.errors else "")) }}
+                                        {{ form.departamento.label() }}
+                                        {% if form.departamento.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.departamento.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notas -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-chat-text"></i> Notas Adicionales</h6>
+                        </div>                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-floating">
+                                    {{ form.notas(class="form-control" + (" is-invalid" if form.notas.errors else ""), rows="3", style="min-height: 100px;") }}
+                                    {{ form.notas.label() }}
+                                    {% if form.notas.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.notas.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('clientes.listar') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> {{ 'Actualizar Cliente' if cliente else 'Crear Cliente' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Mostrar/ocultar campos de empresa según el tipo de cliente
+document.getElementById('tipo_cliente').addEventListener('change', function() {
+    const empresaFields = document.querySelector('.card:nth-child(2)');
+    if (this.value === 'empresa') {
+        empresaFields.style.display = 'block';
+    } else {
+        empresaFields.style.display = 'block'; // Siempre visible pero opcional
+    }
+});
+</script>
+{% endblock %}

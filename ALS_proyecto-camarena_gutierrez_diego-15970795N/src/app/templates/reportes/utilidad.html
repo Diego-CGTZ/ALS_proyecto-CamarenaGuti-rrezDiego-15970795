@@ -1,0 +1,283 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Análisis de Utilidad - ALS Textiles{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="bi bi-graph-up text-primary"></i> Análisis de Utilidad
+    </h1>
+    <p class="text-muted mb-0">Visualiza y analiza la rentabilidad de tus pedidos</p>
+</div>
+
+<!-- Chart.js para visualizaciones -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .utility-stat .value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .utility-hint {
+        background-color: #e6f7ff;
+        border-left: 4px solid #1890ff;
+        padding: 1rem;
+        margin: 1.5rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-graph-up"></i> Análisis de Utilidad
+            <small class="text-muted">Sistema de Gestión Textil</small>
+        </h1>
+    </div>
+</div>
+
+<!-- Dashboard Principal -->
+<div class="row">
+    <!-- Estadísticas Generales -->
+    <div class="col-md-4">
+        <div class="utility-card card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart-line"></i> Promedio de Utilidad</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="utility-stat">
+                    <h3>Porcentaje Promedio</h3>
+                    <div class="value text-primary">{{ "%.1f"|format(stats.promedio_utilidad or 30) }}%</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="utility-stat">
+                            <h3>Mínimo</h3>
+                            <div class="value text-success">{{ "%.1f"|format(stats.min_utilidad or 10) }}%</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="utility-stat">
+                            <h3>Máximo</h3>
+                            <div class="value text-danger">{{ "%.1f"|format(stats.max_utilidad or 50) }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small>Basado en {{ stats.total_pedidos or 0 }} pedidos recientes</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Simulador Interactivo -->
+    <div class="col-md-8">
+        <div class="utility-card card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-sliders"></i> Simulador de Utilidad</h5>
+            </div>
+            <div class="card-body">
+                <div class="utility-interactive-container">
+                    <div class="slider-value">30.0%</div>
+                    <input type="range" class="interactive-utility-slider" min="0" max="100" value="30" step="0.5">
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-5">
+                            <div class="utility-chart-container" data-chart-type="doughnut" data-subtotal="100" data-utility="30" data-iva="20.8">
+                                <canvas></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="table-responsive">
+                                <table class="table table-bordered comparison-table responsive-table">
+                                <thead>
+                                    <tr>
+                                        <th>Concepto</th>
+                                        <th>Valor</th>
+                                        <th>Porcentaje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Costo Base</td>
+                                        <td>$<span id="costoBase">100.00</span></td>
+                                        <td><span id="costoBasePct">66.2%</span></td>
+                                    </tr>
+                                    <tr class="table-warning">
+                                        <td>Utilidad</td>
+                                        <td>$<span id="utilidadValor">30.00</span></td>
+                                        <td><span id="utilidadPct">19.9%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>IVA (16%)</td>
+                                        <td>$<span id="ivaValor">20.80</span></td>
+                                        <td><span id="ivaPct">13.8%</span></td>
+                                    </tr>
+                                    <tr class="table-primary">
+                                        <td><strong>Precio Final</strong></td>
+                                        <td><strong>$<span id="totalValor">150.80</span></strong></td>
+                                        <td>100%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="utility-hint mt-4">
+                    <p class="mb-0"><i class="bi bi-lightbulb"></i> <strong>Sugerencia:</strong> Un margen de utilidad entre 25% y 35% es común en la industria textil para personalización. Ajusta según la complejidad del trabajo y el valor percibido.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Análisis por Tipo de Proceso -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h4 class="mb-3"><i class="bi bi-layers"></i> Utilidad por Tipo de Proceso</h4>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div style="height: 300px;">
+                            <canvas id="chartProcesos"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">                        <div class="table-responsive">
+                            <table class="table responsive-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo de Proceso</th>
+                                        <th>% Promedio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>DTF</td>
+                                        <td>{{ "%.1f"|format(stats.utilidad_dtf or 32) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sublimación</td>
+                                        <td>{{ "%.1f"|format(stats.utilidad_sublimacion or 28) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bordado</td>
+                                        <td>{{ "%.1f"|format(stats.utilidad_bordado or 35) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Vinil</td>
+                                        <td>{{ "%.1f"|format(stats.utilidad_vinil or 30) }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <small><i class="bi bi-info-circle"></i> Los márgenes de utilidad pueden variar según el tipo de proceso debido a las diferentes necesidades de mano de obra y especialización.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Script de visualización de utilidad -->
+<script src="{{ url_for('static', filename='js/utility-visualization.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener el slider y sus elementos relacionados
+    const slider = document.querySelector('.interactive-utility-slider');
+    const costoBaseEl = document.getElementById('costoBase');
+    const costoBasePctEl = document.getElementById('costoBasePct');
+    const utilidadValorEl = document.getElementById('utilidadValor');
+    const utilidadPctEl = document.getElementById('utilidadPct');
+    const ivaValorEl = document.getElementById('ivaValor');
+    const ivaPctEl = document.getElementById('ivaPct');
+    const totalValorEl = document.getElementById('totalValor');
+    
+    // Valores iniciales
+    const costoBase = 100;
+    
+    // Actualizar valores cuando cambia el slider
+    slider.addEventListener('input', function() {
+        const utilidadPct = parseFloat(this.value);
+        const utilidadValor = costoBase * (utilidadPct / 100);
+        const ivaValor = (costoBase + utilidadValor) * 0.16;
+        const totalValor = costoBase + utilidadValor + ivaValor;
+        
+        // Actualizar valores monetarios
+        utilidadValorEl.textContent = utilidadValor.toFixed(2);
+        ivaValorEl.textContent = ivaValor.toFixed(2);
+        totalValorEl.textContent = totalValor.toFixed(2);
+        
+        // Actualizar porcentajes
+        costoBasePctEl.textContent = (costoBase / totalValor * 100).toFixed(1) + '%';
+        utilidadPctEl.textContent = (utilidadValor / totalValor * 100).toFixed(1) + '%';
+        ivaPctEl.textContent = (ivaValor / totalValor * 100).toFixed(1) + '%';
+    });
+    
+    // Inicializar con valores por defecto
+    slider.dispatchEvent(new Event('input'));
+    
+    // Gráfico de procesos
+    const ctxProcesos = document.getElementById('chartProcesos').getContext('2d');
+    new Chart(ctxProcesos, {
+        type: 'bar',
+        data: {
+            labels: ['DTF', 'Sublimación', 'Bordado', 'Vinil'],
+            datasets: [{
+                label: 'Porcentaje de Utilidad Promedio',
+                data: [
+                    {{ stats.utilidad_dtf or 32 }},
+                    {{ stats.utilidad_sublimacion or 28 }},
+                    {{ stats.utilidad_bordado or 35 }},
+                    {{ stats.utilidad_vinil or 30 }}
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Porcentaje de Utilidad por Tipo de Proceso'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Porcentaje (%)'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

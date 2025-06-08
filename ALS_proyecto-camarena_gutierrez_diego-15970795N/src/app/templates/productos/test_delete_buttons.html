@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Botones de Productos - ALS Textiles</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Estilos de productos -->
+    <link rel="stylesheet" href="../static/css/productos.css">
+    
+    <style>
+        body {
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            background-color: #f8f9fa;
+        }
+        .test-title {
+            margin-bottom: 1.5rem;
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 0.5rem;
+        }
+        .response-area {
+            background-color: #212529;
+            color: #fff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            height: 200px;
+            overflow-y: auto;
+        }
+        .product-item {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Prueba de Botones de Productos</h1>
+        <p class="text-muted">Esta página permite probar la funcionalidad de los botones de la sección de productos.</p>
+        
+        <div class="test-section">
+            <h2 class="test-title">Eliminar Productos</h2>
+            <p>A continuación se muestran productos de prueba. Haz clic en los botones para probar la funcionalidad de eliminación.</p>
+            
+            <div class="row" id="productsContainer">
+                <!-- Productos de prueba -->
+                <div class="col-lg-4 col-md-6 mb-4 product-item" data-category="Camisetas" data-name="camiseta básica" data-producto-id="test-product-1" data-producto-nombre="Camiseta Básica">
+                    <div class="card product-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-secondary category-badge">Camisetas</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="fas fa-edit me-2"></i>Editar
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="fas fa-eye me-2"></i>Ver Detalles
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger action-delete" href="#" 
+                                            data-action="delete-producto" 
+                                            data-producto-id="test-product-1" 
+                                            data-producto-nombre="Camiseta Básica" 
+                                            onclick="confirmarEliminacion('test-product-1', 'Camiseta Básica')">
+                                            <i class="fas fa-trash me-2"></i>Eliminar
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <h5 class="card-title">Camiseta Básica</h5>
+                            <p class="card-text text-muted small">Camiseta básica de algodón, perfecta para uso diario.</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price-tag">$15.99</span>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="btn btn-outline-info"><i class="fas fa-eye"></i></a>
+                                        <a href="#" class="btn btn-outline-danger" data-action="delete-producto" data-producto-id="test-product-1" data-producto-nombre="Camiseta Básica"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4 product-item" data-category="Polos" data-name="polo premium" data-producto-id="test-product-2" data-producto-nombre="Polo Premium">
+                    <div class="card product-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-secondary category-badge">Polos</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="fas fa-edit me-2"></i>Editar
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="fas fa-eye me-2"></i>Ver Detalles
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger action-delete" href="#" 
+                                            data-action="delete-producto" 
+                                            data-producto-id="test-product-2" 
+                                            data-producto-nombre="Polo Premium" 
+                                            onclick="confirmarEliminacion('test-product-2', 'Polo Premium')">
+                                            <i class="fas fa-trash me-2"></i>Eliminar
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <h5 class="card-title">Polo Premium</h5>
+                            <p class="card-text text-muted small">Polo de alta calidad con tejido piqué, ideal para ocasiones formales.</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price-tag">$24.99</span>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="btn btn-outline-info"><i class="fas fa-eye"></i></a>
+                                        <a href="#" class="btn btn-outline-danger" data-action="delete-producto" data-producto-id="test-product-2" data-producto-nombre="Polo Premium"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">Consola de Pruebas</h2>
+            <p>A continuación se muestran los mensajes de depuración:</p>
+            <div class="response-area" id="console"></div>
+            <div class="mt-3">
+                <button class="btn btn-secondary" onclick="clearConsole()">Limpiar Consola</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para confirmar eliminación -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmar Eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
+                        <h6>¿Estás seguro de que deseas eliminar este producto?</h6>
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Producto:</strong> <span id="deleteProductName"></span>
+                    </div>
+                    <p class="text-danger small mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Esta acción marcará el producto como inactivo y no se podrá deshacer.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <form id="deleteForm" method="POST" style="display: inline;" onsubmit="return simulateDeleteSubmit(event)">
+                        <input type="hidden" name="csrf_token" value="token-test-12345"/>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Eliminar Producto
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Consola personalizada
+        const consoleOutput = document.getElementById('console');
+        
+        // Guardar la función console.log original
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        // Sobrescribir console.log
+        console.log = function(...args) {
+            // Llamar a la función original
+            originalConsoleLog.apply(console, args);
+            
+            // Agregar mensaje a nuestra consola personalizada
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    return JSON.stringify(arg);
+                }
+                return arg;
+            }).join(' ');
+            
+            const div = document.createElement('div');
+            div.innerText = '✅ ' + message;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        // Sobrescribir console.error
+        console.error = function(...args) {
+            // Llamar a la función original
+            originalConsoleError.apply(console, args);
+            
+            // Agregar mensaje a nuestra consola personalizada
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    return JSON.stringify(arg);
+                }
+                return arg;
+            }).join(' ');
+            
+            const div = document.createElement('div');
+            div.style.color = '#ff6b6b';
+            div.innerText = '❌ ' + message;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+        }
+        
+        // Simulación de eliminación
+        function simulateDeleteSubmit(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const actionUrl = form.action;
+            const productoId = actionUrl.split('/').pop();
+            
+            console.log('Simulando eliminación del producto:', productoId);
+            
+            // Mostrar indicador de carga
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                // Aplicar clase de carga
+                submitBtn.classList.add('btn-loading');
+                const originalHtml = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="btn-text">' + originalHtml + '</span>';
+                submitBtn.disabled = true;
+                
+                // Simulando respuesta del servidor después de 2 segundos
+                setTimeout(() => {
+                    console.log('Respuesta del servidor recibida');
+                    
+                    // Disparar evento personalizado
+                    const event = new CustomEvent('producto-eliminado', {
+                        detail: { productoId: productoId }
+                    });
+                    document.dispatchEvent(event);
+                    
+                    // Restaurar botón
+                    submitBtn.innerHTML = originalHtml;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('btn-loading');
+                    
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    
+                    // Mostrar confirmación
+                    alert('Producto eliminado exitosamente');
+                }, 2000);
+            }
+            
+            return false;
+        }
+        
+        function confirmarEliminacion(id, nombre) {
+            console.log('=== DEBUG ELIMINACIÓN ===');
+            console.log('🎯 ID del producto:', id);
+            console.log('📝 Nombre del producto:', nombre);
+            console.log('🌐 URL actual:', window.location.href);
+            
+            // Verificar que los parámetros sean válidos
+            if (!id) {
+                console.error('❌ ID de producto no válido');
+                alert('Error: ID de producto no válido');
+                return;
+            }
+            
+            // Verificar que Bootstrap esté disponible
+            if (typeof bootstrap === 'undefined') {
+                console.error('❌ Bootstrap no está disponible');
+                alert('Error: Bootstrap no está cargado. Recarga la página.');
+                return;
+            }
+            
+            // Verificar elementos del DOM
+            const deleteNameElement = document.getElementById('deleteProductName');
+            const deleteFormElement = document.getElementById('deleteForm');
+            const deleteModalElement = document.getElementById('deleteModal');
+            
+            console.log('🔍 Verificando elementos del DOM:');
+            console.log('   deleteProductName:', deleteNameElement ? '✅ Encontrado' : '❌ No encontrado');
+            console.log('   deleteForm:', deleteFormElement ? '✅ Encontrado' : '❌ No encontrado');
+            console.log('   deleteModal:', deleteModalElement ? '✅ Encontrado' : '❌ No encontrado');
+            
+            if (!deleteNameElement || !deleteFormElement || !deleteModalElement) {
+                console.error('❌ No se encontraron los elementos necesarios del modal');
+                alert('Error: Modal de confirmación no disponible. Recarga la página.');
+                return;
+            }
+            
+            try {
+                // Configurar el modal
+                console.log('🔧 Configurando modal...');
+                deleteNameElement.textContent = nombre;
+                
+                const actionUrl = '/productos/' + id + '/eliminar';
+                deleteFormElement.action = actionUrl;
+                
+                console.log('✅ Modal configurado:');
+                console.log('   Nombre mostrado:', deleteNameElement.textContent);
+                console.log('   URL de acción:', deleteFormElement.action);
+                
+                // Mostrar el modal
+                console.log('🚀 Mostrando modal...');
+                const modal = new bootstrap.Modal(deleteModalElement, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+                
+                modal.show();
+                console.log('✅ Modal mostrado exitosamente');
+                
+                // Listener para cuando se envíe el formulario
+                deleteFormElement.onsubmit = function(e) {
+                    return simulateDeleteSubmit(e);
+                };
+                
+                // Añadir evento para cerrar el modal cuando se complete la eliminación
+                document.addEventListener('producto-eliminado', function(event) {
+                    if (event.detail && event.detail.productoId === id) {
+                        console.log('🎉 Evento producto-eliminado recibido para:', id);
+                        
+                        // Remover producto de la vista con animación
+                        const productCard = document.querySelector(`[data-producto-id="${id}"]`).closest('.product-item');
+                        if (productCard) {
+                            productCard.classList.add('fade-out');
+                            setTimeout(() => {
+                                productCard.remove();
+                                
+                                // Mostrar mensaje si no hay productos
+                                if (document.querySelectorAll('.product-item').length === 0) {
+                                    document.getElementById('productsContainer').innerHTML = `
+                                        <div class="col-12">
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-tshirt fa-3x text-muted mb-3"></i>
+                                                <h4 class="text-muted">No hay productos disponibles</h4>
+                                                <p class="text-muted">Todos los productos han sido eliminados.</p>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            }, 300);
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('❌ Error al procesar eliminación:', error);
+                alert('Error al mostrar el modal: ' + error.message);
+            }
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página de prueba cargada correctamente');
+            console.log('📦 Productos de prueba listos para ser eliminados');
+            
+            // Event listener para botones de eliminar
+            document.querySelectorAll('[data-action="delete-producto"]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const productoId = this.dataset.productoId;
+                    const productoNombre = this.dataset.productoNombre;
+                    confirmarEliminacion(productoId, productoNombre);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ producto.nombre }} - Productos - Textiles ALS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="page-title">
+                        <i class="bi bi-box text-primary"></i> 
+                        {{ producto.nombre }}
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('productos.listar') }}">Productos</a></li>
+                            <li class="breadcrumb-item active">{{ producto.nombre }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ url_for('productos.editar', id=producto.id) }}" class="btn btn-warning btn-modern">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{{ url_for('productos.listar') }}" class="btn btn-secondary btn-modern">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información Principal del Producto -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle text-primary"></i> 
+                    Información del Producto
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre:</label>
+                            <p class="form-control-plaintext">{{ producto.nombre }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Categoría:</label>
+                            <span class="badge bg-primary fs-6">{{ producto.categoria }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Precio Base:</label>
+                            <p class="form-control-plaintext text-success fw-bold fs-5">
+                                ${{ "%.2f"|format(producto.precio_base) }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Estado:</label>
+                            <span class="badge {% if producto.is_active %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                                {% if producto.is_active %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fecha de Creación:</label>
+                            <p class="form-control-plaintext">{{ producto.created_at.strftime('%d/%m/%Y %H:%M') if producto.created_at else 'No disponible' }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Última Actualización:</label>
+                            <p class="form-control-plaintext">{{ producto.updated_at.strftime('%d/%m/%Y %H:%M') if producto.updated_at else 'No disponible' }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if producto.descripcion %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descripción:</label>
+                    <div class="border rounded p-3 bg-light">
+                        {{ producto.descripcion }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estadísticas del Producto -->
+    <div class="col-lg-4">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up text-success"></i> 
+                    Estadísticas de Ventas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="stat-item">
+                        <h3 class="text-primary mb-0">{{ estadisticas.total_vendido }}</h3>
+                        <small class="text-muted">Unidades Vendidas</small>
+                    </div>
+                </div>
+                <div class="text-center mb-3">
+                    <div class="stat-item">
+                        <h3 class="text-success mb-0">${{ "%.2f"|format(estadisticas.ingresos_generados) }}</h3>
+                        <small class="text-muted">Ingresos Generados</small>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="stat-item">
+                        <h3 class="text-info mb-0">{{ estadisticas.pedidos_incluido }}</h3>
+                        <small class="text-muted">Pedidos Incluido</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tallas y Colores Disponibles -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-rulers text-warning"></i> 
+                    Tallas Disponibles
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if producto.tallas_disponibles %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for talla in producto.tallas_disponibles %}
+                            <span class="badge bg-secondary fs-6 px-3 py-2">{{ talla }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No hay tallas especificadas</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-palette text-info"></i> 
+                    Colores Disponibles
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if producto.colores_disponibles %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for color in producto.colores_disponibles %}
+                            <span class="badge bg-dark fs-6 px-3 py-2">{{ color }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No hay colores especificados</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Posiciones de Personalización -->
+{% if producto.posiciones_personalizacion %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-brush text-purple"></i> 
+                    Posiciones de Personalización Disponibles
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for posicion, descripcion in producto.posiciones_personalizacion.items() %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">{{ posicion }}</span>
+                                    <span>{{ descripcion }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Acciones Adicionales -->
+<div class="row">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-gear text-secondary"></i> 
+                    Acciones
+                </h5>
+            </div>            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('productos.editar', id=producto.id) }}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Editar Producto
+                    </a>
+                    <a href="{{ url_for('productos.listar') }}" class="btn btn-secondary">
+                        <i class="bi bi-list"></i> Ver Todos los Productos
+                    </a>
+                    {% if estadisticas.pedidos_incluido > 0 %}
+                        <button class="btn btn-info" data-bs-toggle="tooltip" 
+                                title="Este producto está incluido en {{ estadisticas.pedidos_incluido }} pedidos">
+                            <i class="bi bi-info-circle"></i> Usado en Pedidos
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarProductoModal">
+                            <i class="bi bi-trash"></i> Eliminar Producto
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="eliminarProductoModal" tabindex="-1" aria-labelledby="eliminarProductoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="eliminarProductoModalLabel">
+                    <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-trash text-danger" style="font-size: 3rem;"></i>
+                </div>
+                <h6 class="text-center mb-3">¿Estás seguro de que deseas eliminar este producto?</h6>
+                <div class="alert alert-warning">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <div>
+                            <strong>Producto:</strong> {{ producto.nombre }}<br>
+                            <strong>Categoría:</strong> {{ producto.categoria }}<br>
+                            <small class="text-muted">Esta acción no se puede deshacer.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>                <form method="POST" action="{{ url_for('productos.eliminar', id=producto.id) }}" style="display: inline;" id="formEliminar">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger" id="btnEliminar">
+                        <i class="bi bi-trash"></i> Confirmar Eliminación
+                    </button>
+                </form>
+                <script>
+                    // Mostrar indicador de carga al enviar el formulario
+                    document.getElementById('formEliminar').addEventListener('submit', function() {
+                        const btn = document.getElementById('btnEliminar');
+                        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Eliminando...';
+                        btn.disabled = true;
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-item {
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.5);
+}
+
+.badge.fs-6 {
+    font-size: 0.9rem !important;
+}
+
+.text-purple {
+    color: #6f42c1 !important;
+}
+</style>
+
+<script>
+// Inicializar tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

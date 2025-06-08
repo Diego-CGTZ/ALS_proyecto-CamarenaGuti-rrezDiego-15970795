@@ -1,0 +1,461 @@
+{% extends "base/layout.html" %}
+
+{% block title %}
+{% if proceso.id %}Editar Proceso{% else %}Nuevo Proceso{% endif %} - ALS Textiles
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-{{ 'pencil' if proceso.id else 'plus' }} text-primary"></i>
+                {% if proceso.id %}Editar Proceso{% else %}Nuevo Proceso{% endif %}
+            </h1>
+            <p class="text-muted mb-0">{{ 'Actualizar información del proceso' if proceso.id else 'Crear un nuevo proceso de personalización' }}</p>
+        </div>
+        <a href="{{ url_for('procesos.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+    
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    
+    .process-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">                <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('procesos.listar') }}">Procesos</a></li>
+                    <li class="breadcrumb-item active">
+                        {% if proceso.id %}Editar{% else %}Nuevo{% endif %}
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="mb-0">
+                <i class="fas fa-cogs me-3"></i>
+                {% if proceso.id %}Editar Proceso{% else %}Nuevo Proceso{% endif %}
+            </h1>
+        </div>
+    </div>
+
+    <form method="POST" id="procesoForm">
+        {{ form.hidden_tag() }}
+        
+        <div class="row">
+            <!-- Form Column -->
+            <div class="col-lg-8">
+                <!-- Información Básica -->
+                <div class="form-section">
+                    <h4 class="mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información Básica
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.tipo(class="form-control", id="tipoProceso") }}
+                                {{ form.tipo.label(class="form-label") }}
+                                {% if form.tipo.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.tipo.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.nombre(class="form-control", id="nombreProceso") }}
+                                {{ form.nombre.label(class="form-label") }}
+                                {% if form.nombre.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.nombre.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.descripcion(class="form-control", id="descripcionProceso", style="height: 120px") }}
+                        {{ form.descripcion.label(class="form-label") }}
+                        {% if form.descripcion.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.descripcion.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Configuración de Precios -->
+                <div class="form-section">
+                    <h4 class="mb-3">
+                        <i class="fas fa-calculator me-2"></i>
+                        Configuración de Precios
+                    </h4>
+                    
+                    <!-- DTF/Sublimación/Vinil Pricing -->
+                    <div id="pricingArea" class="pricing-section" style="display: none;">
+                        <h5>Precios por Área (DTF/Sublimación/Vinil)</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="precioBaseCm2" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                    <label for="precioBaseCm2">Precio por cm² *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="precioMinimo" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                    <label for="precioMinimo">Precio Mínimo *</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            El precio se calcula multiplicando el área (ancho × alto) por el precio por cm². 
+                            Si el resultado es menor al precio mínimo, se cobrará el precio mínimo.
+                        </div>
+                    </div>
+
+                    <!-- Bordado Pricing -->
+                    <div id="pricingBordado" class="pricing-section" style="display: none;">
+                        <h5>Precios por Tamaño (Bordado)</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="precioPequeño" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                    <label for="precioPequeño">Pequeño (hasta 7x7 cm) *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="precioMediano" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                    <label for="precioMediano">Mediano (7x7 a 15x15 cm) *</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="precioGrande" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                    <label for="precioGrande">Grande (más de 15x15 cm) *</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Los precios del bordado son fijos según el tamaño del diseño, 
+                            independientemente del número de colores.
+                        </div>
+                    </div>
+
+                    <!-- Vinil Additional Options -->
+                    <div id="vinilOptions" class="mt-3" style="display: none;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="multicolorSupport">
+                            <label class="form-check-label" for="multicolorSupport">
+                                Soporte para múltiples colores (+20% por color adicional)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración Adicional -->
+                <div class="form-section">
+                    <h4 class="mb-3">
+                        <i class="fas fa-sliders-h me-2"></i>
+                        Configuración Adicional
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" id="tiempoProduccion" 
+                                       min="1" placeholder="1">
+                                <label for="tiempoProduccion">Tiempo de Producción (días)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="estadoActivo">
+                                    <option value="true">Activo</option>
+                                    <option value="false">Inactivo</option>
+                                </select>
+                                <label for="estadoActivo">Estado</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        <textarea class="form-control" id="instrucciones" style="height: 100px;" 
+                                  placeholder="Instrucciones especiales para este proceso..."></textarea>
+                        <label for="instrucciones">Instrucciones Especiales</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Column -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 2rem;">
+                    <!-- Preview Card -->
+                    <div id="previewCard" class="preview-card preview-dtf mb-3">
+                        <div class="process-icon">
+                            <i id="previewIcon" class="fas fa-print"></i>
+                        </div>
+                        <h5 id="previewNombre">Nombre del Proceso</h5>
+                        <span class="badge bg-light text-dark" id="previewTipo">DTF</span>
+                        <p class="mt-3 opacity-75" id="previewDescripcion">Descripción del proceso...</p>
+                        
+                        <hr class="my-3" style="border-color: rgba(255,255,255,0.3);">
+                        
+                        <div id="previewPricing">
+                            <h6>Precios:</h6>
+                            <div id="pricingDetails">
+                                <small>Configura los precios</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        <a href="{{ url_for('procesos.listar') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        
+                        {% if proceso.id %}
+                        <hr>
+                        <button type="button" class="btn btn-outline-danger" 
+                                onclick="confirmarEliminacion('{{ proceso.id }}', '{{ proceso.nombre }}')">
+                            <i class="fas fa-trash me-2"></i>Eliminar Proceso
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Tips</h6>
+                        <ul class="small mb-0">
+                            <li><strong>DTF:</strong> Ideal para diseños complejos y multicolor</li>
+                            <li><strong>Sublimación:</strong> Solo para prendas claras, colores vibrantes</li>
+                            <li><strong>Bordado:</strong> Durabilidad superior, diseños simples</li>
+                            <li><strong>Vinil:</strong> Textos y formas simples, muy duradero</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Delete Confirmation Modal -->
+{% if proceso.id %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el proceso <strong id="deleteProcessName"></strong>?</p>
+                <p class="text-danger small">Esta acción no se puede deshacer y puede afectar pedidos existentes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="#" id="deleteConfirmBtn" class="btn btn-danger">Eliminar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoSelect = document.getElementById('tipoProceso');
+    const nombreInput = document.getElementById('nombreProceso');
+    const descripcionInput = document.getElementById('descripcionProceso');
+    
+    const previewCard = document.getElementById('previewCard');
+    const previewIcon = document.getElementById('previewIcon');
+    const previewNombre = document.getElementById('previewNombre');
+    const previewTipo = document.getElementById('previewTipo');
+    const previewDescripcion = document.getElementById('previewDescripcion');
+    const pricingDetails = document.getElementById('pricingDetails');
+
+    function updatePricingVisibility() {
+        const tipo = tipoSelect.value;
+        const pricingArea = document.getElementById('pricingArea');
+        const pricingBordado = document.getElementById('pricingBordado');
+        const vinilOptions = document.getElementById('vinilOptions');
+        
+        // Hide all pricing sections
+        pricingArea.style.display = 'none';
+        pricingBordado.style.display = 'none';
+        vinilOptions.style.display = 'none';
+        
+        pricingArea.classList.remove('pricing-active');
+        pricingBordado.classList.remove('pricing-active');
+        
+        if (tipo === 'BORDADO') {
+            pricingBordado.style.display = 'block';
+            pricingBordado.classList.add('pricing-active');
+        } else if (['DTF', 'SUBLIMACION', 'VINIL'].includes(tipo)) {
+            pricingArea.style.display = 'block';
+            pricingArea.classList.add('pricing-active');
+            
+            if (tipo === 'VINIL') {
+                vinilOptions.style.display = 'block';
+            }
+        }
+    }
+
+    function updatePreview() {
+        const tipo = tipoSelect.value;
+        const nombre = nombreInput.value || 'Nombre del Proceso';
+        const descripcion = descripcionInput.value || 'Descripción del proceso...';
+        
+        // Update basic info
+        previewNombre.textContent = nombre;
+        previewTipo.textContent = tipo || 'Tipo';
+        previewDescripcion.textContent = descripcion;
+        
+        // Update icon and colors
+        const iconMap = {
+            'DTF': 'fas fa-print',
+            'SUBLIMACION': 'fas fa-fire',
+            'BORDADO': 'fas fa-cut',
+            'VINIL': 'fas fa-layer-group'
+        };
+        
+        const classMap = {
+            'DTF': 'preview-dtf',
+            'SUBLIMACION': 'preview-sublimacion', 
+            'BORDADO': 'preview-bordado',
+            'VINIL': 'preview-vinil'
+        };
+        
+        previewIcon.className = iconMap[tipo] || 'fas fa-cogs';
+        
+        // Remove all preview classes and add the new one
+        Object.values(classMap).forEach(cls => previewCard.classList.remove(cls));
+        previewCard.classList.add(classMap[tipo] || 'preview-dtf');
+        
+        updatePricingPreview();
+    }
+
+    function updatePricingPreview() {
+        const tipo = tipoSelect.value;
+        let details = '<small>Configura los precios</small>';
+        
+        if (tipo === 'BORDADO') {
+            const pequeño = document.getElementById('precioPequeño').value;
+            const mediano = document.getElementById('precioMediano').value;
+            const grande = document.getElementById('precioGrande').value;
+            
+            if (pequeño || mediano || grande) {
+                details = '<div class="small">';
+                if (pequeño) details += `<div>Pequeño: $${parseFloat(pequeño).toFixed(2)}</div>`;
+                if (mediano) details += `<div>Mediano: $${parseFloat(mediano).toFixed(2)}</div>`;
+                if (grande) details += `<div>Grande: $${parseFloat(grande).toFixed(2)}</div>`;
+                details += '</div>';
+            }
+        } else if (['DTF', 'SUBLIMACION', 'VINIL'].includes(tipo)) {
+            const precioCm2 = document.getElementById('precioBaseCm2').value;
+            const minimo = document.getElementById('precioMinimo').value;
+            
+            if (precioCm2 || minimo) {
+                details = '<div class="small">';
+                if (precioCm2) details += `<div>Por cm²: $${parseFloat(precioCm2).toFixed(2)}</div>`;
+                if (minimo) details += `<div>Mínimo: $${parseFloat(minimo).toFixed(2)}</div>`;
+                details += '</div>';
+            }
+        }
+        
+        pricingDetails.innerHTML = details;
+    }
+
+    // Event listeners
+    tipoSelect.addEventListener('change', function() {
+        updatePricingVisibility();
+        updatePreview();
+    });
+    
+    nombreInput.addEventListener('input', updatePreview);
+    descripcionInput.addEventListener('input', updatePreview);
+    
+    // Pricing inputs event listeners
+    ['precioBaseCm2', 'precioMinimo', 'precioPequeño', 'precioMediano', 'precioGrande']
+        .forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', updatePricingPreview);
+            }
+        });
+
+    // Initialize
+    updatePricingVisibility();
+    updatePreview();
+
+    // Form validation
+    document.getElementById('procesoForm').addEventListener('submit', function(e) {
+        const tipo = tipoSelect.value;
+        let isValid = true;
+        
+        if (!tipo || !nombreInput.value.trim()) {
+            isValid = false;
+            mostrarToast('Por favor completa los campos básicos requeridos', 'error');
+        }
+        
+        // Validate pricing based on type
+        if (tipo === 'BORDADO') {
+            const pequeño = document.getElementById('precioPequeño').value;
+            const mediano = document.getElementById('precioMediano').value;
+            const grande = document.getElementById('precioGrande').value;
+            
+            if (!pequeño || !mediano || !grande) {
+                isValid = false;
+                mostrarToast('Por favor configura todos los precios de bordado', 'error');
+            }
+        } else if (['DTF', 'SUBLIMACION', 'VINIL'].includes(tipo)) {
+            const precioCm2 = document.getElementById('precioBaseCm2').value;
+            const minimo = document.getElementById('precioMinimo').value;
+            
+            if (!precioCm2 || !minimo) {
+                isValid = false;
+                mostrarToast('Por favor configura el precio por cm² y el precio mínimo', 'error');
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+});
+
+function confirmarEliminacion(id, nombre) {
+    document.getElementById('deleteProcessName').textContent = nombre;
+    document.getElementById('deleteConfirmBtn').href = `/procesos/eliminar/${id}`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

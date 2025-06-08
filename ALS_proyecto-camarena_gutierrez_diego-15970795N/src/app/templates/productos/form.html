@@ -1,0 +1,358 @@
+{% extends "base/layout.html" %}
+
+{% block title %}
+{% if producto.id %}Editar Producto{% else %}Nuevo Producto{% endif %} - ALS Textiles
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .size-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .color-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+    
+    .usage-stats {
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        margin-top: 1.5rem;
+        background-color: #f9f9f9;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    
+    .order-info-card {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-{{ 'pencil' if producto.id else 'plus' }} text-primary"></i>
+                {% if producto.id %}Editar Producto{% else %}Nuevo Producto{% endif %}
+            </h1>
+            <p class="text-muted mb-0">{{ 'Actualizar información del producto' if producto.id else 'Crear un nuevo producto' }}</p>
+        </div>
+        <a href="{{ url_for('productos.listar') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+<div class="container py-4"><div class="row">
+    <div class="col-12">
+        <!-- Modern product form with page header -->
+        <div class="modern-card">
+            <div class="card-body p-4">
+                <form method="POST" id="productoForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <!-- Form Column -->
+                        <div class="col-lg-8">
+                            <!-- Información Básica -->
+                            <div class="form-section">
+                                <h4 class="mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Información Básica
+                                </h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            {{ form.nombre(class="form-control" + (" is-invalid" if form.nombre.errors else ""), id="nombre") }}
+                                            {{ form.nombre.label() }}
+                                            {% if form.nombre.errors %}
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.nombre.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3">
+                                            {{ form.categoria(class="form-select" + (" is-invalid" if form.categoria.errors else ""), id="categoria") }}
+                                            {{ form.categoria.label() }}
+                                            {% if form.categoria.errors %}
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.categoria.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.categoria(class="form-control", id="categoria", list="categorias") }}
+                                {{ form.categoria.label(class="form-label") }}
+                                <datalist id="categorias">
+                                    <option value="Camisetas">
+                                    <option value="Polos">
+                                    <option value="Sudaderas">
+                                    <option value="Gorras">
+                                    <option value="Chalecos">
+                                    <option value="Pantalones">
+                                    <option value="Shorts">
+                                    <option value="Vestidos">
+                                    <option value="Faldas">
+                                    <option value="Accesorios">
+                                </datalist>
+                                {% if form.categoria.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.categoria.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de Pedidos asociados (solo cuando se está editando) -->
+                    {% if producto.id and estadisticas %}
+                    <div class="usage-stats mt-4">
+                        <h5><i class="fas fa-chart-bar me-2"></i> Estadísticas de Uso</h5>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="stat-number">{{ estadisticas.total_vendido }}</div>
+                                <div>Unidades Vendidas</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-number">{{ estadisticas.pedidos_incluido }}</div>
+                                <div>Pedidos</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-number">${{ "%.2f"|format(estadisticas.ingresos_generados) }}</div>
+                                <div>Ingresos</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.precio_base(class="form-control", id="precioBase") }}
+                                {{ form.precio_base.label(class="form-label") }}
+                                {% if form.precio_base.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.precio_base.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="sku" placeholder="SKU/Código">
+                                <label for="sku">SKU/Código (Opcional)</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.descripcion(class="form-control", id="descripcion", style="height: 120px") }}
+                        {{ form.descripcion.label(class="form-label") }}
+                        {% if form.descripcion.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.descripcion.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Tallas Disponibles -->
+                <div class="form-section">
+                    <h4 class="mb-3">
+                        <i class="fas fa-ruler me-2"></i>
+                        Tallas Disponibles
+                    </h4>
+                    <p class="text-muted">Selecciona las tallas disponibles para este producto:</p>
+                    
+                    <div class="tallas-grid">
+                        {% for talla in ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '2XL', '3XL', '4XL'] %}
+                        <div class="talla-item">
+                            <input type="checkbox" class="form-check-input me-2" id="talla_{{ talla }}" 
+                                   name="tallas" value="{{ talla }}">
+                            <label class="form-check-label" for="talla_{{ talla }}">{{ talla }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Colores Disponibles -->
+                <div class="form-section">
+                    <h4 class="mb-3">
+                        <i class="fas fa-palette me-2"></i>
+                        Colores Disponibles
+                    </h4>
+                    <p class="text-muted">Selecciona los colores disponibles para este producto:</p>
+                    
+                    <div class="colores-grid">
+                        {% for color, hex in [
+                            ('Blanco', '#FFFFFF'),
+                            ('Negro', '#000000'),
+                            ('Azul', '#0066CC'),
+                            ('Rojo', '#CC0000'),
+                            ('Verde', '#009900'),
+                            ('Amarillo', '#FFCC00'),
+                            ('Naranja', '#FF6600'),
+                            ('Rosa', '#FF69B4'),
+                            ('Morado', '#9900CC'),
+                            ('Gris', '#666666'),
+                            ('Azul Marino', '#003366'),
+                            ('Verde Oliva', '#808000')
+                        ] %}
+                        <div class="color-item">
+                            <input type="checkbox" class="form-check-input me-2" id="color_{{ color }}" 
+                                   name="colores" value="{{ color }}">
+                            <div class="color-preview" style="background-color: {{ hex }}"></div>
+                            <label class="form-check-label" for="color_{{ color }}">{{ color }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Column -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 2rem;">
+                    <!-- Preview Card -->
+                    <div class="preview-card mb-3">
+                        <i class="fas fa-tshirt fa-3x mb-3"></i>
+                        <h5 id="previewNombre">Nombre del Producto</h5>
+                        <span class="badge bg-light text-dark" id="previewCategoria">Categoría</span>
+                        <div class="preview-price" id="previewPrecio">$0.00</div>
+                        <p class="small opacity-75" id="previewDescripcion">Descripción del producto...</p>
+                    </div>                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-modern btn-primary btn-lg") }}
+                        <a href="{{ url_for('productos.listar') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        
+                        {% if producto.id %}
+                        <hr>
+                        <button type="button" class="btn btn-outline-danger" 
+                                onclick="confirmarEliminacion('{{ producto.id }}', '{{ producto.nombre }}')">
+                            <i class="fas fa-trash me-2"></i>Eliminar Producto
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Tips</h6>
+                        <ul class="small mb-0">
+                            <li>Usa nombres descriptivos para tus productos</li>
+                            <li>Categoriza consistentemente</li>
+                            <li>El precio base se usará para cálculos</li>
+                            <li>Incluye descripciones detalladas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Delete Confirmation Modal -->
+{% if producto.id %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el producto <strong id="deleteProductName"></strong>?</p>
+                <p class="text-danger small">Esta acción no se puede deshacer y puede afectar pedidos existentes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="#" id="deleteConfirmBtn" class="btn btn-danger">Eliminar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nombreInput = document.getElementById('nombre');
+    const categoriaInput = document.getElementById('categoria');
+    const precioInput = document.getElementById('precioBase');
+    const descripcionInput = document.getElementById('descripcion');
+    
+    const previewNombre = document.getElementById('previewNombre');
+    const previewCategoria = document.getElementById('previewCategoria');
+    const previewPrecio = document.getElementById('previewPrecio');
+    const previewDescripcion = document.getElementById('previewDescripcion');
+
+    function updatePreview() {
+        previewNombre.textContent = nombreInput.value || 'Nombre del Producto';
+        previewCategoria.textContent = categoriaInput.value || 'Categoría';
+        previewPrecio.textContent = '$' + (parseFloat(precioInput.value) || 0).toFixed(2);
+        previewDescripcion.textContent = descripcionInput.value || 'Descripción del producto...';
+    }
+
+    // Update preview on input changes
+    nombreInput.addEventListener('input', updatePreview);
+    categoriaInput.addEventListener('input', updatePreview);
+    precioInput.addEventListener('input', updatePreview);
+    descripcionInput.addEventListener('input', updatePreview);
+
+    // Initialize preview with existing values
+    updatePreview();
+
+    // Form validation
+    document.getElementById('productoForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        const requiredFields = ['nombre', 'categoria', 'precioBase'];
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            mostrarToast('Por favor completa todos los campos requeridos', 'error');
+        }
+    });
+});
+
+function confirmarEliminacion(id, nombre) {
+    document.getElementById('deleteProductName').textContent = nombre;
+    document.getElementById('deleteConfirmBtn').href = `/productos/eliminar/${id}`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

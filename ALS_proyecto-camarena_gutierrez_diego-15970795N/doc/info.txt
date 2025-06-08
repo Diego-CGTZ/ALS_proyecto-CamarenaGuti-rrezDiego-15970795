@@ -1,0 +1,93 @@
+INFORMACIÓN DEL PROYECTO
+========================
+
+Asignatura: ALS (Análisis, Lógica y Sistemas)
+Proyecto: Sistema de Gestión ALS - Aplicación Web Flask
+Estudiante: Diego Camarena Gutiérrez
+DNI: 15970795N
+Curso: Semestre 6
+Fecha de entrega: Junio 2025
+
+DESCRIPCIÓN DEL PROYECTO
+========================
+Sistema web desarrollado en Flask para la gestión integral de:
+- Clientes
+- Productos
+- Procesos de fabricación
+- Pedidos y gestión de inventario
+
+TECNOLOGÍAS UTILIZADAS
+=====================
+- Backend: Python 3.11, Flask 2.3+
+- Base de datos: SQLite con SQLAlchemy ORM
+- Frontend: HTML5, CSS3, Bootstrap 5, JavaScript
+- Autenticación: Flask-Login
+- Formularios: Flask-WTF
+- Migración de datos: Flask-Migrate
+
+CARACTERÍSTICAS PRINCIPALES
+===========================
+- Sistema de autenticación de usuarios
+- CRUD completo para todas las entidades
+- Interfaz responsiva y moderna
+- Calculadora de costes integrada
+- Gestión de estados de pedidos
+- Panel de administración intuitivo
+
+ESTRUCTURA DEL PROYECTO
+=======================
+src/
+├── app/                    # Aplicación principal Flask
+│   ├── models/            # Modelos de base de datos
+│   ├── routes/            # Rutas y controladores
+│   ├── forms/             # Formularios WTF
+│   ├── templates/         # Plantillas HTML
+│   ├── static/           # Archivos estáticos (CSS, JS, imágenes)
+│   ├── services/         # Lógica de negocio
+│   └── utils/            # Utilidades y helpers
+├── scripts/              # Scripts de utilidad
+├── config.py            # Configuración de la aplicación
+├── run.py              # Punto de entrada
+├── requirements.txt    # Dependencias Python
+└── .env.template      # Plantilla de variables de entorno
+
+REPOSITORIO
+===========
+URL: https://github.com/Diego-CGTZ/ALS_proyecto-CamarenaGuti-rrezDiego-15970795.git
+
+INSTRUCCIONES DE INSTALACIÓN
+============================
+1. Crear entorno virtual: python -m venv venv
+2. Activar entorno: venv\Scripts\activate (Windows)
+3. Instalar dependencias: pip install -r requirements.txt
+4. Configurar variables de entorno: copiar .env.template a .env
+5. Inicializar base de datos: python scripts/init_db.py
+6. Ejecutar aplicación: python run.py
+
+FUNCIONALIDADES IMPLEMENTADAS
+=============================
+✓ Sistema de autenticación completo
+✓ Gestión de clientes (CRUD)
+✓ Gestión de productos (CRUD)
+✓ Gestión de procesos (CRUD)
+✓ Gestión de pedidos (CRUD)
+✓ Calculadora de costes avanzada
+✓ Panel de administración
+✓ Interfaz responsiva
+✓ Validación de formularios
+✓ Gestión de errores
+✓ Sistema de logging
+
+NOTAS ADICIONALES
+================
+- La aplicación utiliza SQLite como base de datos por defecto
+- Incluye datos de ejemplo para testing
+- Interfaz optimizada para dispositivos móviles y desktop
+- Código documentado y estructurado siguiendo buenas prácticas
+
+AUTOR
+=====
+Diego Camarena Gutiérrez
+Estudiante de Ingeniería de Software
+Universidad: [Nombre de tu universidad]
+Email: [Tu email académico]

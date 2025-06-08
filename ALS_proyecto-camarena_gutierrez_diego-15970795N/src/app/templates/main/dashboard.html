@@ -1,0 +1,253 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Dashboard - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-house"></i> Dashboard
+                <small class="text-muted">Sistema de Gestión Textil ALS</small>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Principales -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card modern-card gradient-primary">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title text-white">Pedidos Activos</h5>
+                        <h2 class="mb-0 text-white">{{ estadisticas.pedidos_pendientes + estadisticas.pedidos_proceso or 0 }}</h2>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-bag fs-1 text-white opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{{ url_for('pedidos.index') }}" class="text-white text-decoration-none d-flex align-items-center">
+                    <small>Ver todos</small>
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card modern-card gradient-success">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title text-white">Clientes</h5>
+                        <h2 class="mb-0 text-white">{{ estadisticas.total_clientes or 0 }}</h2>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-people fs-1 text-white opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{{ url_for('clientes.listar') }}" class="text-white text-decoration-none d-flex align-items-center">
+                    <small>Ver todos</small>
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card modern-card gradient-info">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title text-white">Productos</h5>
+                        <h2 class="mb-0 text-white">{{ estadisticas.total_productos or 0 }}</h2>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-box fs-1 text-white opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{{ url_for('productos.listar') }}" class="text-white text-decoration-none d-flex align-items-center">
+                    <small>Ver todos</small>
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card modern-card gradient-warning">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title text-dark">Ingresos Mes</h5>
+                        <h2 class="mb-0 text-dark">${{ "%.2f"|format(estadisticas.ingresos_mes or 0) }}</h2>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-currency-dollar fs-1 text-dark opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <small class="text-dark">Este mes</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning text-primary"></i> 
+                    Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-2 col-6">
+                        <a href="{{ url_for('pedidos.crear') }}" class="btn btn-modern btn-outline-primary d-block py-3">
+                            <i class="bi bi-plus-circle fs-1 d-block mb-2"></i>
+                            <small>Nuevo Pedido</small>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="{{ url_for('clientes.nuevo') }}" class="btn btn-modern btn-outline-success d-block py-3">
+                            <i class="bi bi-person-plus fs-1 d-block mb-2"></i>
+                            <small>Nuevo Cliente</small>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="{{ url_for('productos.nuevo') }}" class="btn btn-modern btn-outline-info d-block py-3">
+                            <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                            <small>Nuevo Producto</small>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="{{ url_for('procesos.calculadora') }}" class="btn btn-modern btn-outline-warning d-block py-3">
+                            <i class="bi bi-calculator fs-1 d-block mb-2"></i>
+                            <small>Calculadora</small>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="{{ url_for('pedidos.index', estado='pendiente') }}" class="btn btn-modern btn-outline-danger d-block py-3">
+                            <i class="bi bi-clock fs-1 d-block mb-2"></i>
+                            <small>Pendientes</small>
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <a href="{{ url_for('pedidos.index', estado='en_proceso') }}" class="btn btn-modern btn-outline-secondary d-block py-3">
+                            <i class="bi bi-gear fs-1 d-block mb-2"></i>
+                            <small>En Proceso</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pedidos Recientes -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card modern-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history text-primary"></i> 
+                    Pedidos Recientes
+                </h5>
+                <a href="{{ url_for('pedidos.index') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+            </div>
+            <div class="card-body p-0">
+                {% if pedidos_recientes %}
+                    <div class="table-responsive">
+                        <table class="table modern-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Estado</th>
+                                    <th>Total</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pedido in pedidos_recientes %}
+                                    <tr>
+                                        <td>
+                                            <span class="text-primary fw-bold">#{{ pedido.id | safe_slice(8) }}</span>
+                                        </td>
+                                        <td>
+                                            {{ pedido.cliente_id | cliente_display(clientes) }}
+                                        </td>
+                                        <td>
+                                            <span class="badge modern-badge badge-{{ 'warning' if pedido.estado.value == 'PENDIENTE' else 'info' if pedido.estado.value == 'EN_PROCESO' else 'success' if pedido.estado.value == 'COMPLETADO' else 'danger' }}">
+                                                {{ pedido.estado | enum_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="text-success fw-bold">
+                                                ${{ "%.2f"|format(pedido.total if pedido.total is defined and pedido.total is not none and pedido.total > 0 else pedido.subtotal|default(0.0)) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ pedido.created_at.strftime('%d/%m/%Y') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('pedidos.detalle', id=pedido.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No hay pedidos recientes</p>
+                        <a href="{{ url_for('pedidos.crear') }}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Crear primer pedido
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+      <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Pedidos Atrasados</h5>
+            </div><div class="card-body">
+                {% if pedidos_atrasados %}
+                    {% for pedido in pedidos_atrasados %}                        <div class="alert alert-warning d-flex justify-content-between align-items-center">                            <div>                                <strong>#{{ pedido.id | safe_slice(8) }}</strong><br>
+                                <small>
+                                    {{ pedido.cliente_id | cliente_display(clientes) }}
+                                </small><br>
+                                <small class="text-muted">Entrega: {{ pedido.fecha_entrega_estimada.strftime('%d/%m/%Y') if pedido.fecha_entrega_estimada else 'No definida' }}</small>
+                            </div>
+                            <a href="{{ url_for('pedidos.detalle', id=pedido.id) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle fs-1 text-success"></i>
+                        <p class="text-muted mt-2">No hay pedidos urgentes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,397 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{{ proceso.nombre }} - Procesos - Textiles ALS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .process-detail-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .process-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 2rem;
+        border-radius: 15px 15px 0 0;
+        text-align: center;
+    }
+    
+    .process-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+    }
+    
+    .config-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        border: none;
+    }
+    
+    .config-table td {
+        border: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .pricing-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+    }
+    
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('procesos.listar') }}">
+                            <i class="fas fa-cogs"></i> Procesos
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ proceso.nombre }}</li>
+                </ol>
+            </nav>
+            
+            <div class="btn-group">
+                <a href="{{ url_for('procesos.configurar', id=proceso.id) }}" 
+                   class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Configurar
+                </a>
+                <button class="btn btn-outline-danger" 
+                        onclick="confirmarEliminacion('{{ proceso.id }}', '{{ proceso.nombre }}')">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Process Details Card -->
+        <div class="card process-detail-card mb-4">
+            <div class="process-header">
+                <div class="process-icon">
+                    {% if proceso.tipo.value == 'DTF' %}
+                        <i class="fas fa-print"></i>
+                    {% elif proceso.tipo.value == 'SUBLIMACION' %}
+                        <i class="fas fa-fire"></i>
+                    {% elif proceso.tipo.value == 'BORDADO' %}
+                        <i class="fas fa-cut"></i>
+                    {% elif proceso.tipo.value == 'VINIL' %}
+                        <i class="fas fa-layer-group"></i>
+                    {% endif %}
+                </div>
+                <h2 class="mb-2">{{ proceso.nombre }}</h2>
+                <p class="mb-0 opacity-75">{{ proceso.tipo.value }}</p>
+                <span class="status-badge bg-success mt-2 d-inline-block">
+                    <i class="fas fa-check-circle"></i> Activo
+                </span>
+            </div>
+            
+            <div class="card-body">
+                {% if proceso.descripcion %}
+                <div class="mb-4">
+                    <h5 class="text-primary">
+                        <i class="fas fa-info-circle me-2"></i>Descripción
+                    </h5>
+                    <p class="text-muted">{{ proceso.descripcion }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- Configuration Details -->
+                <div class="mb-4">
+                    <h5 class="text-primary">
+                        <i class="fas fa-cog me-2"></i>Configuración Actual
+                    </h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table config-table">
+                            {% if proceso.tipo.value in ['DTF', 'SUBLIMACION'] %}
+                            <tr>
+                                <th width="40%">Precio por Metro</th>
+                                <td>
+                                    <strong class="text-success">
+                                        ${{ "%.2f"|format(proceso.precio_por_metro if proceso.precio_por_metro else 0) }}
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Ancho Disponible</th>
+                                <td>{{ proceso.ancho_disponible if proceso.ancho_disponible else 'No configurado' }} cm</td>
+                            </tr>
+                            {% elif proceso.tipo.value == 'BORDADO' %}
+                            <tr>
+                                <th width="40%">Precio Setup</th>
+                                <td>
+                                    <strong class="text-success">
+                                        ${{ "%.2f"|format(proceso.precio_setup if proceso.precio_setup else 0) }}
+                                    </strong>
+                                </td>
+                            </tr>
+                            {% if proceso.precios_por_tamaño %}
+                            {% for tamaño, precio in proceso.precios_por_tamaño.items() %}
+                            <tr>
+                                <th>Precio {{ tamaño.title() }}</th>
+                                <td>
+                                    <strong class="text-success">${{ "%.2f"|format(precio) }}</strong>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                            {% elif proceso.tipo.value == 'VINIL' %}
+                            <tr>
+                                <th width="40%">Precio por cm²</th>
+                                <td>
+                                    <strong class="text-success">
+                                        ${{ "%.2f"|format(proceso.precio_por_cm2 if proceso.precio_por_cm2 else 0) }}
+                                    </strong>
+                                </td>
+                            </tr>
+                            {% if proceso.tipos_vinil %}
+                            {% for nombre, precio in proceso.tipos_vinil.items() %}
+                            <tr>
+                                <th>{{ nombre }}</th>
+                                <td>
+                                    <strong class="text-success">${{ "%.2f"|format(precio) }}</strong> por cm²
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                            {% endif %}
+                            
+                            <tr>
+                                <th>Fecha de Creación</th>
+                                <td>{{ proceso.created_at.strftime('%d/%m/%Y %H:%M') if proceso.created_at else 'No disponible' }}</td>
+                            </tr>
+                            
+                            {% if proceso.updated_at %}
+                            <tr>
+                                <th>Última Actualización</th>
+                                <td>{{ proceso.updated_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="mb-4">
+                    <h5 class="text-primary">
+                        <i class="fas fa-chart-line me-2"></i>Información Adicional
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-clock text-muted me-2"></i>
+                                <span class="text-muted">Tiempo estimado:</span>
+                                <strong class="ms-2">
+                                    {{ proceso.tiempo_estimado if proceso.tiempo_estimado else 'No configurado' }} horas
+                                </strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-tag text-muted me-2"></i>
+                                <span class="text-muted">ID del proceso:</span>
+                                <code class="ms-2">{{ proceso.id }}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Quick Calculator -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-calculator me-2"></i>Calculadora Rápida
+                </h6>
+            </div>
+            <div class="card-body">
+                <form id="quickCalculator">
+                    {% if proceso.tipo.value in ['DTF', 'SUBLIMACION', 'VINIL'] %}
+                    <div class="mb-3">
+                        <label class="form-label">Ancho (cm)</label>
+                        <input type="number" class="form-control" id="quickAncho" 
+                               placeholder="10" step="0.1" min="0.1">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Alto (cm)</label>
+                        <input type="number" class="form-control" id="quickAlto" 
+                               placeholder="10" step="0.1" min="0.1">
+                    </div>
+                    {% endif %}
+                    
+                    {% if proceso.tipo.value == 'BORDADO' %}
+                    <div class="mb-3">
+                        <label class="form-label">Tamaño</label>
+                        <select class="form-select" id="quickTamaño">
+                            <option value="PEQUEÑO">Pequeño (hasta 7x7 cm)</option>
+                            <option value="MEDIANO">Mediano (7x7 a 15x15 cm)</option>
+                            <option value="GRANDE">Grande (más de 15x15 cm)</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" id="quickCantidad" 
+                               value="1" min="1">
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary w-100" 
+                            onclick="calcularRapido()">
+                        <i class="fas fa-calculator me-2"></i>Calcular
+                    </button>
+                </form>
+                
+                <div id="quickResult" class="pricing-card mt-3" style="display: none;">
+                    <div class="text-center">
+                        <h6 class="mb-1">Precio Total</h6>
+                        <h3 class="mb-0">$<span id="quickPrice">0.00</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>Acciones
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('procesos.configurar', id=proceso.id) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Configurar Proceso
+                    </a>
+                    
+                    <a href="{{ url_for('procesos.listar') }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>Ver Todos los Procesos
+                    </a>
+                    
+                    <button class="btn btn-outline-danger" 
+                            onclick="confirmarEliminacion('{{ proceso.id }}', '{{ proceso.nombre }}')">
+                        <i class="fas fa-trash me-2"></i>Eliminar Proceso
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el proceso <strong id="deleteProcessName"></strong>?</p>
+                <p class="text-danger small">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function calcularRapido() {
+    const tipo = '{{ proceso.tipo.value }}';
+    let precio = 0;
+    const cantidad = parseInt(document.getElementById('quickCantidad').value) || 1;
+    
+    if (tipo === 'DTF' || tipo === 'SUBLIMACION' || tipo === 'VINIL') {
+        const ancho = parseFloat(document.getElementById('quickAncho').value) || 0;
+        const alto = parseFloat(document.getElementById('quickAlto').value) || 0;
+        const area = ancho * alto;
+        
+        if (area === 0) {
+            mostrarToast('Ingresa las dimensiones válidas', 'warning');
+            return;
+        }
+        
+        {% if proceso.tipo.value == 'DTF' %}
+        precio = Math.max(area * {{ proceso.precio_por_metro if proceso.precio_por_metro else 0.15 }}, 3.00);
+        {% elif proceso.tipo.value == 'SUBLIMACION' %}
+        precio = Math.max(area * {{ proceso.precio_por_metro if proceso.precio_por_metro else 0.12 }}, 2.50);
+        {% elif proceso.tipo.value == 'VINIL' %}
+        precio = Math.max(area * {{ proceso.precio_por_cm2 if proceso.precio_por_cm2 else 0.20 }}, 4.00);
+        {% endif %}
+        
+    } else if (tipo === 'BORDADO') {
+        const tamaño = document.getElementById('quickTamaño').value;
+        
+        {% if proceso.precios_por_tamaño %}
+        switch (tamaño) {
+            {% for tamaño, precio_bord in proceso.precios_por_tamaño.items() %}
+            case '{{ tamaño }}':
+                precio = {{ precio_bord }};
+                break;
+            {% endfor %}
+        }
+        {% else %}
+        switch (tamaño) {
+            case 'PEQUEÑO':
+                precio = 8.00;
+                break;
+            case 'MEDIANO':
+                precio = 12.00;
+                break;
+            case 'GRANDE':
+                precio = 18.00;
+                break;
+        }
+        {% endif %}
+    }
+    
+    const total = precio * cantidad;
+    document.getElementById('quickPrice').textContent = total.toFixed(2);
+    document.getElementById('quickResult').style.display = 'block';
+}
+
+function confirmarEliminacion(id, nombre) {
+    document.getElementById('deleteProcessName').textContent = nombre;
+    document.getElementById('deleteForm').action = `{{ url_for('procesos.eliminar', id='PLACEHOLDER') }}`.replace('PLACEHOLDER', id);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function mostrarToast(mensaje, tipo) {
+    // Simple alert for now - can be improved with proper toast notifications
+    alert(mensaje);
+}
+</script>
+{% endblock %}

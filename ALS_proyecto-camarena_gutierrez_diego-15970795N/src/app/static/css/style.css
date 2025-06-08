@@ -1,0 +1,424 @@
+/* Sistema de Gestión Textil - Estilos Personalizados */
+
+/* Variables CSS */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    
+    /* Nuevas variables de color para un tema más claro */
+    --card-bg-color: #ffffff;  /* Blanco puro para cards */
+    --hover-bg-color: #f8f9fa; /* Gris muy claro para hover */
+    --body-bg-color: #f0f2f5;  /* Gris claro para el fondo */
+    --header-bg-color: #ffffff; /* Blanco para headers */
+    --border-color: #e5e7eb;   /* Gris claro para bordes */
+    
+    --border-radius: 0.375rem;
+    --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --box-shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos Generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--body-bg-color);
+    line-height: 1.6;
+    color: var(--dark-color);
+}
+
+/* Navbar personalizada */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    transition: all 0.3s ease;
+    border-radius: var(--border-radius);
+    margin: 0 0.2rem;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Cards mejoradas */
+.card {
+    border: 1px solid var(--border-color);
+    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    background-color: var(--card-bg-color);
+}
+
+.card:hover {
+    box-shadow: var(--box-shadow-lg);
+    transform: translateY(-2px);
+    border-color: var(--border-color);
+}
+
+.card-header {
+    background-color: var(--header-bg-color);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+/* Botones mejorados */
+.btn {
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-width: 1px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-group .btn {
+    transform: none;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Estadísticas del Dashboard */
+.stats-card {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    color: var(--dark-color);
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.stats-card h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.stats-card .icon {
+    font-size: 3rem;
+    opacity: 0.8;
+}
+
+/* Acciones rápidas */
+.quick-action {
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+}
+
+.quick-action:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-lg);
+    text-decoration: none;
+}
+
+.quick-action i {
+    display: block;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.quick-action:hover i {
+    transform: scale(1.1);
+}
+
+/* Tablas mejoradas */
+.table {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: white;
+}
+
+.table thead th {
+    background-color: var(--light-color);
+    border-bottom: 2px solid var(--primary-color);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    transform: scale(1.01);
+}
+
+.table-responsive {
+    border-radius: var(--border-radius);
+}
+
+/* Badges personalizadas */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--border-radius);
+}
+
+/* Estados de pedidos */
+.estado-pendiente { background-color: var(--warning-color); }
+.estado-en_proceso { background-color: var(--info-color); }
+.estado-completado { background-color: var(--success-color); }
+.estado-cancelado { background-color: var(--danger-color); }
+
+/* Prioridades */
+.prioridad-baja { background-color: var(--secondary-color); }
+.prioridad-media { background-color: var(--info-color); }
+.prioridad-alta { background-color: var(--warning-color); }
+.prioridad-urgente { background-color: var(--danger-color); }
+
+/* Formularios mejorados */
+.form-control, .form-select {
+    border-radius: var(--border-radius);
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+/* Alertas mejoradas */
+.alert {
+    border: none;
+    border-radius: var(--border-radius);
+    border-left: 4px solid;
+}
+
+.alert-success { border-left-color: var(--success-color); }
+.alert-warning { border-left-color: var(--warning-color); }
+.alert-danger { border-left-color: var(--danger-color); }
+.alert-info { border-left-color: var(--info-color); }
+
+/* Modales */
+.modal-content {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    background-color: var(--light-color);
+}
+
+/* Footer */
+footer {
+    background-color: var(--light-color) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+    margin-top: auto;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Clases de animación */
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease;
+}
+
+/* Loading spinner */
+.spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.25rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .stats-card h2 {
+        font-size: 2rem;
+    }
+    
+    .quick-action {
+        padding: 1rem;
+    }
+}
+
+/* Estilos específicos para el detalle de pedidos */
+.item-card {
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.item-card:hover {
+    border-left-color: var(--success-color);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.personalizacion-card {
+    background-color: rgba(13, 110, 253, 0.05);
+    border: 1px solid rgba(13, 110, 253, 0.2);
+}
+
+/* Calculadora de procesos */
+.calculator-form {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--dark-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--box-shadow);
+}
+
+.calculator-form .form-control,
+.calculator-form .form-select {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+}
+
+.calculator-result {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.calculator-result h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Utilidades personalizadas */
+.text-primary-dark {
+    color: #0b5ed7 !important;
+}
+
+.bg-primary-light {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.border-primary-thick {
+    border-width: 3px !important;
+    border-color: var(--primary-color) !important;
+}
+
+.shadow-custom {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Estados visuales */
+.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Print styles */
+@media print {
+    .btn, .navbar, footer, .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+    }
+    
+    .container-fluid {
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+}

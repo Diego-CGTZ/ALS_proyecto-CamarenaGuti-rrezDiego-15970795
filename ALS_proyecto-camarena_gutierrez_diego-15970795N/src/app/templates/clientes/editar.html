@@ -1,0 +1,7 @@
+{% extends "clientes/form.html" %}
+
+{% set titulo = "Editar Cliente" %}
+{% set action = url_for('clientes.editar', id=cliente.id) %}
+
+{# This template extends the form template for editing existing clients #}
+{# All the form rendering logic is inherited from form.html #}

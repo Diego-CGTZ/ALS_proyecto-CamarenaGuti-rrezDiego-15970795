@@ -1,0 +1,170 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Calculadora de Precios - ALS Textiles{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="bi bi-calculator text-primary"></i> Calculadora de Precios
+    </h1>
+    <p class="text-muted mb-0">Estima el costo de tus personalizaciones de forma rápida y precisa</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="modern-card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-gear text-primary"></i> Configuración del Proceso</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('procesos.calculadora') }}">
+                    {{ form.csrf_token }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                {{ form.proceso_id(class="form-select") }}
+                                <label for="{{ form.proceso_id.id }}">Proceso a aplicar</label>
+                                {% if form.proceso_id.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.proceso_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                              
+                            <div class="form-floating mb-3">
+                                {{ form.ancho_diseño(class="form-control") }}
+                                <label for="{{ form.ancho_diseño.id }}">Ancho del diseño (cm)</label>
+                                {% if form.ancho_diseño.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.ancho_diseño.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                          <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                {{ form.cantidad(class="form-control") }}
+                                <label for="{{ form.cantidad.id }}">Cantidad de prendas</label>
+                                {% if form.cantidad.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.cantidad.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                {{ form.alto_diseño(class="form-control") }}
+                                <label for="{{ form.alto_diseño.id }}">Alto del diseño (cm)</label>                                {% if form.alto_diseño.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.alto_diseño.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-calculator"></i> Calcular
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-receipt"></i> Resultado</h5>
+                </div>
+                <div class="card-body">
+                    {% if resultado %}
+                        <div class="alert alert-info mb-4">
+                            <h4 class="alert-heading">Detalles del proceso:</h4>
+                            <p><strong>Proceso:</strong> {{ resultado.nombre_proceso }}</p>
+                            <p><strong>Tipo:</strong> {{ resultado.tipo_proceso }}</p>
+                            <p><strong>Dimensiones:</strong> {{ resultado.ancho }}cm x {{ resultado.alto }}cm</p>
+                            <p><strong>Cantidad:</strong> {{ resultado.cantidad }} prendas</p>
+                        </div>
+                        
+                        {% if resultado.detalles %}
+                        <div class="alert alert-light mb-4">
+                            <h5 class="mb-2">Cálculo de metros:</h5>
+                            <p class="mb-1"><strong>Ancho disponible:</strong> {{ resultado.detalles.ancho_disponible }}cm</p>
+                            <p class="mb-1"><strong>Diseños por fila:</strong> {{ resultado.detalles.diseños_por_ancho }}</p>
+                            <p class="mb-1"><strong>Filas necesarias:</strong> {{ resultado.detalles.filas_necesarias }}</p>
+                            <p class="mb-1"><strong>Metros a imprimir:</strong> <span class="fw-bold text-primary">{{ "%.4f"|format(resultado.detalles.metros_necesarios) }}m</span></p>
+                            <p class="mb-0"><strong>Precio por metro:</strong> ${{ "%.0f"|format(resultado.detalles.precio_por_metro) }} MXN</p>
+                        </div>
+                        {% endif %}
+                        
+                        <h3 class="mb-3">Cotización:</h3>
+                        <div class="table-responsive">
+                            <table class="table table-bordered responsive-table">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Precio por unidad:</th>
+                                    <td class="text-end">${{ "%.2f"|format(resultado.precio_unitario) }} MXN</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Subtotal:</th>
+                                    <td class="text-end">${{ "%.2f"|format(resultado.subtotal) }} MXN</td>
+                                </tr>
+                                {% if resultado.costo_setup %}
+                                <tr>
+                                    <th scope="row">Costo de setup:</th>
+                                    <td class="text-end">${{ "%.2f"|format(resultado.costo_setup) }} MXN</td>
+                                </tr>
+                                {% endif %}                                <tr class="table-primary">
+                                    <th scope="row">Total:</th>
+                                    <td class="text-end fw-bold">${{ "%.2f"|format(resultado.total) }} MXN</td>
+                                </tr>
+                            </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-secondary mt-3">
+                            <p class="mb-1"><small>Los precios son estimados y pueden variar según características específicas.</small></p>
+                            <p class="mb-0"><small>Para cotizaciones precisas, contacta directamente con nuestro equipo.</small></p>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-calculator fs-1 text-muted"></i>
+                            <p class="text-muted mt-3">Completa el formulario para calcular el precio de tu personalización</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const procesoSelect = document.getElementById('{{ form.proceso_id.id }}');
+    
+    // Simple form validation for DTF and SUBLIMACION processes
+    procesoSelect.addEventListener('change', function() {
+        const selectedOption = procesoSelect.options[procesoSelect.selectedIndex]?.text || '';
+        console.log('Proceso seleccionado:', selectedOption);
+    });
+});
+</script>
+{% endblock %}

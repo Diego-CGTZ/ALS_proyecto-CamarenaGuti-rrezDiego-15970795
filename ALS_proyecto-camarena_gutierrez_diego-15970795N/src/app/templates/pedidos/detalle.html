@@ -1,0 +1,395 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Pedido #{{ pedido.id | safe_slice(8) }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-bag text-primary"></i> Pedido #{{ pedido.id | safe_slice(8) }}
+                <span class="modern-badge badge-{{ 'warning' if pedido.estado == 'pendiente' else 'info' if pedido.estado == 'en_proceso' else 'success' if pedido.estado == 'completado' else 'danger' }} ms-2">
+                    {{ pedido.estado.replace('_', ' ').title() }}
+                </span>
+            </h1>
+            <p class="text-muted mb-0">
+                Creado el {{ pedido.created_at.strftime('%d/%m/%Y a las %H:%M') }}
+            </p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ url_for('pedidos.editar', id=pedido.id) }}" class="btn btn-modern btn-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="{{ url_for('pedidos.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Información del Cliente y Pedido -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="modern-card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-person text-primary"></i> Información del Cliente</h5>
+            </div>
+            <div class="card-body">
+                {% if cliente %}
+                    <h6>{{ cliente.nombre }}{% if cliente.apellido %} {{ cliente.apellido }}{% endif %}</h6>
+                    {% if cliente.empresa %}
+                        <p class="text-muted mb-1">{{ cliente.empresa }}</p>
+                    {% endif %}
+                    <p class="mb-1">
+                        <i class="bi bi-envelope"></i> {{ cliente.email }}<br>
+                        <i class="bi bi-telephone"></i> {{ cliente.telefono }}
+                    </p>
+                    {% if cliente.direccion %}
+                        <p class="mb-0">
+                            <i class="bi bi-geo-alt"></i> {{ cliente.direccion }}<br>
+                            {{ cliente.ciudad }}, {{ cliente.departamento }}
+                        </p>
+                    {% endif %}
+                    <hr>                    <a href="{{ url_for('clientes.editar', id=cliente.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> Ver Cliente
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Cliente no encontrado
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+      <div class="col-md-6">
+        <div class="modern-card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-info-circle text-primary"></i> Detalles del Pedido</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Prioridad:</strong><br>
+                        <span class="modern-badge badge-{{ 'danger' if pedido.prioridad == 'urgente' else 'warning' if pedido.prioridad == 'alta' else 'info' if pedido.prioridad == 'media' else 'secondary' }}">
+                            {{ pedido.prioridad.title() }}
+                        </span>
+                    </div><div class="col-6">
+                        <strong>Fecha de Entrega:</strong><br>
+                        {% if pedido.fecha_entrega_estimada %}
+                            {{ pedido.fecha_entrega_estimada.strftime('%d/%m/%Y') }}
+                            {% if pedido.fecha_entrega_estimada.date() < fecha_actual and pedido.estado != 'completado' %}
+                                <br><small class="text-danger"><i class="bi bi-exclamation-triangle"></i> Vencido</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">No definida</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if pedido.notas %}
+                    <hr>
+                    <strong>Notas:</strong><br>
+                    <p class="text-muted">{{ pedido.notas }}</p>
+                {% endif %}
+                
+                <hr>                <div class="row text-center">
+                    <div class="col-3">
+                        <strong>Items:</strong><br>
+                        <h5 class="text-primary">{{ items|length }}</h5>
+                    </div>
+                    <div class="col-3">
+                        <strong>Subtotal:</strong><br>
+                        <h5 class="text-info" id="subtotal-display">${{ "%.2f"|format(pedido.subtotal) }}</h5>
+                    </div>
+                    <div class="col-3">
+                        <strong>Utilidad:</strong><br>
+                        <h5 class="text-warning" id="utilidad-display">{{ "%.1f"|format(pedido.porcentaje_utilidad) }}% (${{ "%.2f"|format(pedido.utilidad) }})</h5>
+                    </div>
+                    <div class="col-3">
+                        <strong>Total:</strong><br>
+                        <h4 class="text-success fw-bold" id="total-display">${{ "%.2f"|format(pedido.total) }}</h4>
+                    </div>
+                </div>
+                
+                <hr>
+                <div class="alert alert-info text-center">
+                    <small><i class="bi bi-info-circle"></i> Los totales se actualizan cuando se editan los items o personalizaciones</small>
+                </div>
+                
+                {% if pedido.descuento_porcentaje > 0 %}
+                    <hr>
+                    <div class="alert alert-info">
+                        <i class="bi bi-percent"></i> Descuento aplicado: {{ pedido.descuento_porcentaje }}%
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Items del Pedido -->
+<div class="row">
+    <div class="col-12">
+        <div class="modern-card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-box"></i> Items del Pedido</h5>
+                <a href="{{ url_for('pedidos.agregar_item', pedido_id=pedido.id) }}" class="btn btn-modern btn-primary">
+                    <i class="bi bi-plus"></i> Agregar Item
+                </a>
+            </div>
+            <div class="card-body">                {% if items %}
+                    {% for item in items %}
+                        <div class="modern-card mb-3 border-start border-primary border-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6 class="card-title">
+                                            {% if item.producto %}
+                                                {{ item.producto.nombre }}
+                                                <span class="modern-badge badge-secondary ms-2">{{ item.producto.categoria }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Producto no encontrado</span>
+                                            {% endif %}
+                                        </h6>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <strong>Cantidad:</strong> {{ item.cantidad }}
+                                            </div>
+                                            {% if item.talla %}
+                                                <div class="col-md-3">
+                                                    <strong>Talla:</strong> {{ item.talla }}
+                                                </div>
+                                            {% endif %}
+                                            {% if item.color %}
+                                                <div class="col-md-3">
+                                                    <strong>Color:</strong> {{ item.color }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="col-md-3">
+                                                <strong>Precio Base:</strong> ${{ "%.2f"|format(item.precio_base) }}
+                                            </div>
+                                        </div>
+                                        
+                                        {% if item.notas %}
+                                            <p class="text-muted mt-2 mb-0">
+                                                <i class="bi bi-chat-text"></i> {{ item.notas }}
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-4 text-end">
+                                        <h5 class="text-primary">${{ "%.2f"|format(item.precio_total) }}</h5>                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('pedidos.editar_item', item_id=item.id) }}" 
+                                               class="btn btn-outline-warning" title="Editar item">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{{ url_for('pedidos.agregar_personalizacion', item_id=item.id) }}" 
+                                               class="btn btn-outline-success" title="Agregar personalización">
+                                                <i class="bi bi-plus"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    title="Eliminar item"
+                                                    onclick="confirmarEliminacionItem('{{ item.id }}', '{% if item.producto %}{{ item.producto.nombre }}{% else %}Item{% endif %}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Personalizaciones del Item -->                                {% if item.personalizaciones %}
+                                    <hr>
+                                    <h6><i class="bi bi-gear"></i> Personalizaciones</h6>
+                                    <div class="row">
+                                        {% for pers in item.personalizaciones %}
+                                            <div class="col-md-6 mb-2">
+                                                <div class="modern-card bg-light">
+                                                    <div class="card-body p-3">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div>
+                                                                <h6 class="card-title mb-1">
+                                                                    {% if pers.proceso %}
+                                                                        {{ pers.proceso.nombre }}
+                                                                    {% else %}
+                                                                        Proceso no encontrado
+                                                                    {% endif %}
+                                                                </h6>
+                                                                
+                                                                {% if pers.descripcion %}
+                                                                    <p class="card-text mb-1">{{ pers.descripcion }}</p>
+                                                                {% endif %}
+                                                                
+                                                                <small class="text-muted">
+                                                                    {% if pers.ancho and pers.alto %}
+                                                                        {{ pers.ancho }}x{{ pers.alto }}cm
+                                                                    {% endif %}
+                                                                    {% if pers.cantidad_colores > 1 %}
+                                                                        | {{ pers.cantidad_colores }} colores
+                                                                    {% endif %}
+                                                                    {% if pers.colores %}
+                                                                        <br>Colores: {{ pers.colores }}
+                                                                    {% endif %}
+                                                                </small>
+                                                                
+                                                                {% if pers.notas %}
+                                                                    <br><small class="text-info">{{ pers.notas }}</small>
+                                                                {% endif %}
+                                                            </div>
+                                                            
+                                                            <div class="text-end">
+                                                                <strong class="text-success">${{ "%.2f"|format(pers.costo) }}</strong>
+                                                                <br>                                                                <button type="button" class="btn btn-sm btn-outline-danger mt-1" 
+                                                                        title="Eliminar personalizacion"
+                                                                        onclick="confirmarEliminacionPersonalizacion('{{ pers.id }}', '{{ pers.proceso.nombre if pers.proceso else 'Personalizacion' }}')">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <hr>
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-gear"></i> Sin personalizaciones
+                                        <br>                                        <a href="{{ url_for('pedidos.agregar_personalizacion', item_id=item.id) }}" 
+                                           class="btn btn-sm btn-outline-primary mt-2">
+                                            <i class="bi bi-plus"></i> Agregar Personalizacion
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-box fs-1 text-muted"></i>
+                        <h5 class="text-muted mt-3">No hay items en este pedido</h5>
+                        <p class="text-muted">Comienza agregando productos al pedido</p>                        <a href="{{ url_for('pedidos.agregar_item', pedido_id=pedido.id) }}" class="btn btn-modern btn-primary">
+                            <i class="bi bi-plus"></i> Agregar Primer Item
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales de Confirmación -->
+<!-- Modal Eliminar Item -->
+<div class="modal fade" id="modalEliminarItem" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el item <strong id="nombreItem"></strong>?</p>
+                <p class="text-muted">Se eliminarán también todas sus personalizaciones.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formEliminarItem" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Eliminar Personalización -->
+<div class="modal fade" id="modalEliminarPersonalizacion" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar la personalización <strong id="nombrePersonalizacion"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formEliminarPersonalizacion" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmarEliminacionItem(itemId, nombreItem) {
+    document.getElementById('nombreItem').textContent = nombreItem;
+    document.getElementById('formEliminarItem').action = "{{ url_for('pedidos.eliminar_item', item_id='') }}" + itemId;
+    new bootstrap.Modal(document.getElementById('modalEliminarItem')).show();
+}
+
+function confirmarEliminacionPersonalizacion(persId, nombrePersonalizacion) {
+    document.getElementById('nombrePersonalizacion').textContent = nombrePersonalizacion;
+    document.getElementById('formEliminarPersonalizacion').action = "{{ url_for('pedidos.eliminar_personalizacion', personalizacion_id='') }}" + persId;
+    new bootstrap.Modal(document.getElementById('modalEliminarPersonalizacion')).show();
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Función para obtener datos actualizados del pedido
+        function actualizarTotalesPedido() {
+            const pedidoId = '{{ pedido.id }}';
+            
+            // Realizar llamada a la API para obtener totales actualizados
+            fetch(`/pedidos/api/pedido/${pedidoId}/totales`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener datos del pedido');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Actualizar los elementos en la UI con los nuevos totales
+                    document.getElementById('subtotal-display').textContent = `$${data.subtotal.toFixed(2)}`;
+                    document.getElementById('utilidad-display').textContent = 
+                        `${data.porcentaje_utilidad.toFixed(1)}% ($${data.utilidad.toFixed(2)})`;
+                    document.getElementById('total-display').textContent = `$${data.total.toFixed(2)}`;
+                    
+                    // Si hay alguna alerta para mostrar, podríamos agregarlo aquí
+                    console.log('Totales actualizados correctamente');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+        
+        // Auto-actualizar cada 10 segundos cuando el usuario está en la página
+        const intervalId = setInterval(actualizarTotalesPedido, 10000);
+        
+        // Limpiar el intervalo cuando el usuario sale de la página
+        window.addEventListener('beforeunload', function() {
+            clearInterval(intervalId);
+        });
+    });
+    
+    // Funciones para los modales de confirmación
+    function confirmarEliminacionItem(itemId, nombre) {
+        document.getElementById('nombreItem').textContent = nombre;
+        document.getElementById('formEliminarItem').action = `/pedidos/eliminar_item/${itemId}`;
+        const modal = new bootstrap.Modal(document.getElementById('modalEliminarItem'));
+        modal.show();
+    }
+    
+    function confirmarEliminacionPersonalizacion(persId, nombre) {
+        document.getElementById('nombrePersonalizacion').textContent = nombre;
+        document.getElementById('formEliminarPersonalizacion').action = `/pedidos/eliminar_personalizacion/${persId}`;
+        const modal = new bootstrap.Modal(document.getElementById('modalEliminarPersonalizacion'));
+        modal.show();
+    }
+</script>
+{% endblock %}
