@@ -25,12 +25,45 @@ class StorageService:
         if self._sirope is None:
             try:
                 current_app.logger.info("Inicializando Sirope")
-                # Creamos una instancia simple de Sirope
-                self._sirope = sirope.Sirope()
+                
+                # Verificar si debemos usar Redis o no
+                use_redis = current_app.config.get('USE_REDIS', True)
+                
+                if use_redis:
+                    # Intentar conectar a Redis
+                    try:
+                        redis_host = current_app.config.get('REDIS_HOST', 'localhost')
+                        redis_port = current_app.config.get('REDIS_PORT', 6379)
+                        redis_db = current_app.config.get('REDIS_DB', 0)
+                        
+                        # Crear conexión Redis
+                        redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db)
+                        # Probar conexión
+                        redis_client.ping()
+                        
+                        current_app.logger.info(f"Conectando a Redis en {redis_host}:{redis_port}")
+                        self._sirope = sirope.Sirope(redis_client)
+                        
+                    except (redis.ConnectionError, ConnectionRefusedError, Exception) as redis_error:
+                        current_app.logger.warning(f"No se pudo conectar a Redis: {redis_error}")
+                        current_app.logger.info("Usando backend en memoria para demo")
+                        # Fallback a backend en memoria
+                        self._sirope = sirope.Sirope(None)
+                else:
+                    current_app.logger.info("Configurado para usar backend en memoria")
+                    # Usar backend en memoria directamente
+                    self._sirope = sirope.Sirope(None)
+                
                 current_app.logger.info("Sirope inicializado con éxito")
             except Exception as e:
                 current_app.logger.error(f"Error al inicializar Sirope: {e}")
-                raise
+                # Último recurso: backend en memoria
+                try:
+                    current_app.logger.info("Intentando backend en memoria como último recurso")
+                    self._sirope = sirope.Sirope(None)
+                except Exception as final_error:
+                    current_app.logger.error(f"Error crítico inicializando Sirope: {final_error}")
+                    raise
         return self._sirope
     
     def save(self, obj: Any) -> str:

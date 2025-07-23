@@ -31,15 +31,20 @@ class ProductionConfig(Config):
     """Configuración de producción."""
     DEBUG = False
     
-    # En producción, usar Redis desde variable de entorno si está disponible
-    # Si no hay Redis, Sirope puede usar un backend en memoria (no persistente)
+    # En producción sin Redis, usar backend en memoria
+    # NOTA: Los datos se perderán al reiniciar el servicio
+    # Para persistencia real, configurar Redis en la nube
+    USE_REDIS = False
+    
     @staticmethod
     def init_app(app):
         """Configuración especial para producción."""
         # Log que estamos en producción
         import logging
         logging.basicConfig(level=logging.INFO)
-        app.logger.info("Aplicación iniciada en modo PRODUCCIÓN")
+        app.logger.info("=== APLICACIÓN EN MODO PRODUCCIÓN ===")
+        app.logger.info("Backend: Memoria (demo) - Los datos no persisten")
+        app.logger.info("Para persistencia real, configurar Redis externo")
     
 class TestingConfig(Config):
     """Configuración de pruebas."""
