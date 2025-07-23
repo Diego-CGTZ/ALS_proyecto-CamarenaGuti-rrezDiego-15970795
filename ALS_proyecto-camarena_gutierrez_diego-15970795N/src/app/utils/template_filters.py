@@ -3,7 +3,17 @@ Template filters para manejo seguro de IDs y otros valores.
 """
 
 from flask import Flask
-from bson import ObjectId
+
+# Import opcional de bson para compatibilidad
+try:
+    from bson import ObjectId
+    HAS_BSON = True
+except ImportError:
+    # Si no está disponible, crear una clase mock
+    HAS_BSON = False
+    class ObjectId:
+        """Mock ObjectId para compatibilidad."""
+        pass
 
 def init_template_filters(app: Flask):
     """
@@ -20,7 +30,9 @@ def init_template_filters(app: Flask):
             return ""
         
         # Si es un ObjectId de MongoDB, convertir a string
-        if hasattr(value, '__class__') and 'ObjectId' in value.__class__.__name__:
+        if HAS_BSON and isinstance(value, ObjectId):
+            return str(value)
+        elif hasattr(value, '__class__') and 'ObjectId' in value.__class__.__name__:
             return str(value)
         
         # Si ya es string, devolverlo tal como está
