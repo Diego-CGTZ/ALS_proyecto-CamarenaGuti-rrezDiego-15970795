@@ -21,12 +21,21 @@ from werkzeug.security import generate_password_hash
 
 def init_demo_data():
     """Inicializar datos de demostración."""
-    app = create_app('production')
     
-    with app.app_context():
-        storage = StorageService()
-        
-        print("🚀 Inicializando datos de demostración...")
+    # Importar aquí para evitar imports circulares
+    from flask import current_app
+    from app.services.storage_service import StorageService
+    from app.models.usuario import Usuario
+    from app.models.cliente import Cliente
+    from app.models.producto import Producto
+    from app.models.proceso import Proceso
+    from werkzeug.security import generate_password_hash
+    
+    storage = StorageService()
+    
+    print("🚀 Inicializando datos de demostración...")
+    if current_app:
+        current_app.logger.info("🚀 Inicializando datos de demostración...")
         
         # 1. Crear usuario demo
         try:
@@ -178,4 +187,8 @@ def init_demo_data():
 
 
 if __name__ == '__main__':
-    init_demo_data()
+    # Cuando se ejecuta directamente, crear app context
+    from app import create_app
+    app = create_app('production')
+    with app.app_context():
+        init_demo_data()

@@ -37,6 +37,10 @@ def create_app(config_name=None):
     # Registrar manejadores de errores
     register_error_handlers(app)
     
+    # Inicializar datos demo en producción (solo si no existen)
+    if config_name == 'production':
+        init_demo_data_if_needed(app)
+    
     return app
 
 
@@ -144,3 +148,48 @@ def register_error_handlers(app):
     def forbidden_error(error):
         from flask import render_template
         return render_template('errors/403.html'), 403
+
+
+def init_demo_data_if_needed(app):
+    """Inicializar datos demo automáticamente en producción."""
+    
+    def create_demo_data():
+        """Crear datos demo si no existen."""
+        try:
+            from app.services.storage_service import StorageService
+            from app.models.usuario import Usuario
+            
+            with app.app_context():
+                storage = StorageService()
+                
+                # Verificar si ya existen datos (usuario demo)
+                try:
+                    existing_user = storage.find_first(Usuario, lambda u: u.username == 'demo')
+                    
+                    if not existing_user:
+                        app.logger.info("🚀 Inicializando datos demo automáticamente...")
+                        
+                        # Importar e ejecutar función de datos demo
+                        from init_demo import init_demo_data
+                        init_demo_data()
+                        
+                        app.logger.info("✅ Datos demo inicializados automáticamente")
+                    else:
+                        app.logger.info("ℹ️ Datos demo ya existen, omitiendo inicialización")
+                        
+                except Exception as storage_error:
+                    app.logger.warning(f"Error verificando datos existentes: {storage_error}")
+                    # Intentar crear datos de todas formas
+                    from init_demo import init_demo_data
+                    init_demo_data()
+                    app.logger.info("✅ Datos demo inicializados (forzado)")
+                    
+        except Exception as e:
+            app.logger.error(f"❌ Error inicializando datos demo: {e}")
+            # No fallar la aplicación por esto
+    
+    # Ejecutar en un hilo separado para no bloquear el inicio
+    import threading
+    thread = threading.Thread(target=create_demo_data)
+    thread.daemon = True
+    thread.start()
